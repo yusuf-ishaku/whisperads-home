@@ -27,6 +27,9 @@ module.exports = {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      backgroundImage: {
+        "frame": "url('/register-bg.png')",
+      }
     },
   },
   plugins: [require("tailwindcss-animate")],
