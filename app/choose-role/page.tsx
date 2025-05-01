@@ -12,7 +12,7 @@ export default function ChooseRole() {
 
   const handleProceed = () => {
     if (selectedRole) {
-      router.push(`/signup/${selectedRole.toLowerCase()}`)
+      router.push(`/create-account?role=${selectedRole.toLowerCase()}`)
     }
   }
 

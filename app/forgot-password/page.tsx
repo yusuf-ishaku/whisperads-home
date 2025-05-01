@@ -41,7 +41,7 @@ function ForgotPassword({ params }: { params: { role: string } }) {
     defaultValues: {
       email: "",
       password: "",
-      whatsappNumber: "",
+      // whatsappNumber: "",
       accountNumber: "",
       bank: "",
     },
@@ -74,6 +74,7 @@ function ForgotPassword({ params }: { params: { role: string } }) {
         </Button>
         <h1 className="text-white text-lg font-medium">Forgot Password</h1>
       </header>
+      
       <div className="flex flex-col mt-5">
         <div className="mx-auto">
           <div className="bg-white w-[325px] h-[250px] ">

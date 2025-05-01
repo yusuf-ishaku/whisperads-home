@@ -32,7 +32,7 @@ import Google from "@/components/icons/Google";
 import ResetCodeForm from '@/components/ResetCodeForm';
 
 
-function ForgotPassword({ params }: { params: { role: string } }) {
+function CheckEmail({ params }: { params: { role: string } }) {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -42,7 +42,7 @@ function ForgotPassword({ params }: { params: { role: string } }) {
     defaultValues: {
       email: "",
       password: "",
-      whatsappNumber: "",
+      // whatsappNumber: "",
       accountNumber: "",
       bank: "",
     },
@@ -130,4 +130,4 @@ function ForgotPassword({ params }: { params: { role: string } }) {
   );
 }
 
-export default ForgotPassword;
+export default CheckEmail;
