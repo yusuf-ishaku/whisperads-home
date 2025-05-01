@@ -4,12 +4,11 @@ import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, Eye, EyeOff } from "lucide-react";
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -29,47 +28,84 @@ import {
 } from "@/components/ui/form";
 import { signUpSchema, type SignUpValues } from "@/lib/validations/auth";
 import Google from "@/components/icons/Google";
+import { useSearchParams } from "next/navigation";
 
 function Login({ params }: { params: { role: string } }) {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const searchParams = useSearchParams();
+  const [role, setRole] = useState<string | null>(null);
 
   const form = useForm<SignUpValues>({
     resolver: zodResolver(signUpSchema),
     defaultValues: {
       email: "",
       password: "",
-      whatsappNumber: "",
-      accountNumber: "",
-      bank: "",
     },
   });
+
+
+  // useEffect(() => {
+  //   // Check for existing session
+  //   const user = sessionStorage.getItem("user");
+  //   const token = sessionStorage.getItem("token");
+    
+  //   if (user && token) {
+  //     router.push("/dashboard/ad-creation");
+  //   }
+  // }, []);
+  
   async function onSubmit(data: SignUpValues) {
     setIsLoading(true);
     try {
-      // Here you would typically make an API call to register the user
-      console.log(data);
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      // router.push("/login");
+      const response = await fetch("/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...data,
+          role,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Login failed");
+      }
+
+      const result = await response.json();
+      
+      // Store both user data and token
+      sessionStorage.setItem("user", JSON.stringify(result.user));
+      sessionStorage.setItem("token", result.token);
+      
+      // Redirect to dashboard
+      router.push("/dashboard/ad-creation");
+      
     } catch (error) {
       console.error(error);
+      // Handle error display to user
     } finally {
       setIsLoading(false);
     }
   }
 
+  useEffect(() => {
+    console.log("Form Errors:", form.formState.errors);
+  }, [form.formState.errors]);
+
   return (
     <main className="text-5xl text-black font-bold h-screen">
-      <div className="w-full h-[55px] text-white text-center p-2 bg-primary"></div>
+      <div className="w-full h-[55px] text-white text-center p-1 bg-primary"></div>
       <div className="flex flex-col mt-10">
         <div className="flex justify-center p-4">
           <Image src="/logo.png" width={34} height={34} alt="logo" />
         </div>
 
         <div className="mx-auto">
-          <div className="bg-white rounded-xl p-2  w-[325px] h-[513px] ">
+          <div className="bg-white rounded-xl w-[325px] h-[513px] ">
             <div className="text-center space-y-2">
               <h2 className="text-xl font-medium">Login</h2>
               <p className="text-sm font-normal">
@@ -81,10 +117,7 @@ function Login({ params }: { params: { role: string } }) {
             </div>
 
             <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className="px-2 mt-5 "
-              >
+              <form onSubmit={form.handleSubmit(onSubmit)} className=" mt-5 ">
                 <FormField
                   control={form.control}
                   name="email"
@@ -97,7 +130,7 @@ function Login({ params }: { params: { role: string } }) {
                         <Input
                           placeholder="Adaku@gmail.com"
                           {...field}
-                          className="placeholder:text-sm placeholder-gray-400 placeholder:font-light"
+                          className="font-medium text-sm placeholder:text-sm placeholder-gray-400 placeholder:font-light"
                         />
                       </FormControl>
                       <FormMessage className="text-red-500 text-xs" />
@@ -119,7 +152,7 @@ function Login({ params }: { params: { role: string } }) {
                             type={showPassword ? "text" : "password"}
                             placeholder="*******"
                             {...field}
-                            className="placeholder:text-sm placeholder-gray-400 placeholder:font-light pr-10"
+                            className="font-medium text-sm placeholder:text-sm placeholder-gray-400 placeholder:font-light"
                           />
                           <button
                             type="button"
@@ -177,7 +210,7 @@ function Login({ params }: { params: { role: string } }) {
                 </div>
 
                 <button
-                  type="submit"
+                  type="button"
                   className="w-full text-black flex items-center justify-center text-center space-x-3 h-11 rounded-xl px-8 bg-white border border-gray-300"
                 >
                   <Google />
