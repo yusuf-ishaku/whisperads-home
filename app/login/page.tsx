@@ -79,10 +79,10 @@ function Login({ params }: { params: { role: string } }) {
       
       // Store both user data and token
       sessionStorage.setItem("user", JSON.stringify(result.user));
-      sessionStorage.setItem("token", result.token);
+      sessionStorage.setItem("token", result.token);  
       
       // Redirect to dashboard
-      router.push("/dashboard/ad-creation");
+      router.push("/dashboard/wallet");
       
     } catch (error) {
       console.error(error);
