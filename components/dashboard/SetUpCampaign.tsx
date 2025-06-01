@@ -63,7 +63,6 @@ function SetUpCampaign() {
     setLoading(true);
 
     try {
-      // Get user data and token from storage
       const user = JSON.parse(sessionStorage.getItem("user") || "null");
       const token = sessionStorage.getItem("token");
 
@@ -71,7 +70,6 @@ function SetUpCampaign() {
         throw new Error("Please log in first - no session found");
       }
 
-      // 1. File upload
       const fileFormData = new FormData();
       fileFormData.append("file", data.adFile[0]);
 
@@ -93,18 +91,18 @@ function SetUpCampaign() {
         throw new Error("File upload failed: No URL returned");
       }
 
-      // 2. Campaign creation
+     
       const campaignPayload = {
         title: data.adName,
         pricingModel: data.pricingModel,
         adGoal: data.adGoal,
         caption: data.adDescription,
         mediaUrl: uploadedFileUrl,
-        budget: data.budget || 1000, // Default if not provided
+        budget: data.budget || 1000, 
         startDate: new Date().toISOString(),
         endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
         status: "draft",
-        advertiserId: user.advertiserId, // Use actual user ID
+        advertiserId: user.advertiserId, 
       };
 
       const createCampaignRes = await fetch("/api/campaign-setup", {

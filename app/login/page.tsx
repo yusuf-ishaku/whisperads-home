@@ -12,13 +12,6 @@ import { ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   Form,
   FormControl,
   FormField,
@@ -29,6 +22,7 @@ import {
 import { signUpSchema, type SignUpValues } from "@/lib/validations/auth";
 import Google from "@/components/icons/Google";
 import { useSearchParams } from "next/navigation";
+import AccountSuccessModal from "@/components/AccountSuccessModal";
 
 function Login({ params }: { params: { role: string } }) {
   const router = useRouter();
@@ -36,6 +30,7 @@ function Login({ params }: { params: { role: string } }) {
   const [isLoading, setIsLoading] = useState(false);
   const searchParams = useSearchParams();
   const [role, setRole] = useState<string | null>(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const form = useForm<SignUpValues>({
     resolver: zodResolver(signUpSchema),
@@ -45,20 +40,41 @@ function Login({ params }: { params: { role: string } }) {
     },
   });
 
+  useEffect(() => {
+    const roleParam = searchParams.get("role");
+    if (!roleParam) {
+      router.push("/choose-role");
+    } else {
+      setRole(roleParam);
+    }
+  }, [searchParams]);
+
+  //   useEffect(() => {
+  //     // Check for existing session
+  //     const user =  sessionStorage.getItem("user");
+  //     const token = sessionStorage.getItem("token");
+
+  //     if (user && token) {
+  //       router.push("/dashboard/ad-creation");
+  //     }
+  //   }, []);
 
   // useEffect(() => {
-  //   // Check for existing session
-  //   const user = sessionStorage.getItem("user");
-  //   const token = sessionStorage.getItem("token");
-    
-  //   if (user && token) {
-  //     router.push("/dashboard/ad-creation");
+  //   const roleParam = searchParams.get("role");
+  //   if (!roleParam) {
+  //     router.push("/choose-role?redirect=/login");
+  //   } else {
+  //     setRole(roleParam);
   //   }
-  // }, []);
-  
+  // }, [searchParams]);
+
   async function onSubmit(data: SignUpValues) {
     setIsLoading(true);
     try {
+      if (!role) {
+        throw new Error("Role is missing");
+      }
+
       const response = await fetch("/api/login", {
         method: "POST",
         headers: {
@@ -76,17 +92,24 @@ function Login({ params }: { params: { role: string } }) {
       }
 
       const result = await response.json();
-      
-      // Store both user data and token
+
       sessionStorage.setItem("user", JSON.stringify(result.user));
-      sessionStorage.setItem("token", result.token);  
-      
-      // Redirect to dashboard
-      router.push("/dashboard/wallet");
-      
+      sessionStorage.setItem("token", result.token);
+
+      // const userRole = result.user.role.toString().toLowerCase();
+      // if (userRole === 'advertiser') {
+      //   router.push('/dashboard/advertiser/wallet');
+      // } else if (userRole === 'agent') {
+      //   router.push('/dashboard/agent/agent-dashboard');
+      // } else {
+      //   router.push('/dashboard');
+      // }
+      //  setShowSuccessModal(true);
     } catch (error) {
       console.error(error);
-      // Handle error display to user
+      form.setError("root", {
+        message: (error as Error).message || "Login failed. Please try again.",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -98,16 +121,20 @@ function Login({ params }: { params: { role: string } }) {
 
   return (
     <main className="text-5xl text-black font-bold h-screen">
+      {showSuccessModal && <AccountSuccessModal role={role || ""} />}
+
       <div className="w-full h-[55px] text-white text-center p-1 bg-primary"></div>
       <div className="flex flex-col mt-10">
         <div className="flex justify-center p-4">
           <Image src="/logo.png" width={34} height={34} alt="logo" />
         </div>
 
-        <div className="mx-auto">
+        <div className="mx-auto p-2">
           <div className="bg-white rounded-xl w-[325px] h-[513px] ">
             <div className="text-center space-y-2">
               <h2 className="text-xl font-medium">Login</h2>
+              <p className="text-sm font-normal">Selected Role: {role}</p>
+
               <p className="text-sm font-normal">
                 Don&apos;t have an account?
                 <Link className="text-primary px-1" href="/create-account">

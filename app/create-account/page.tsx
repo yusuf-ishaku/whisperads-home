@@ -11,13 +11,6 @@ import { ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   Form,
   FormControl,
   FormField,
@@ -49,12 +42,13 @@ function CreateAccount({ params }: { params: { role: string } }) {
   useEffect(() => {
     const roleParam = searchParams.get("role");
     if (!roleParam) {
-      router.push("/select-role");
+      router.push("/choose-role");
     } else {
+      console.log("params:", roleParam);
       setRole(roleParam);
     }
   }, [searchParams]);
-  
+
   async function onSubmit(data: SignUpValues) {
     setIsLoading(true);
     try {
@@ -79,12 +73,11 @@ function CreateAccount({ params }: { params: { role: string } }) {
       }
 
       const result = await response.json();
-      
-      // Store both user data and token
+
       sessionStorage.setItem("user", JSON.stringify(result.user));
       sessionStorage.setItem("token", result.token);
-      
-     setShowSuccessModal(true);
+
+      setShowSuccessModal(true);
     } catch (error) {
       console.error(error);
       // Handle error display to user
@@ -97,11 +90,9 @@ function CreateAccount({ params }: { params: { role: string } }) {
     console.log("Form Errors:", form.formState.errors);
   }, [form.formState.errors]);
 
-
-
   return (
     <>
-      {showSuccessModal && <AccountSuccessModal />}
+      {showSuccessModal && <AccountSuccessModal role={role || ""} />}
 
       <main className="text-5xl text-black font-bold h-screen">
         <div className="w-full h-[55px] text-white text-center p-2 bg-primary"></div>
