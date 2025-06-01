@@ -4,7 +4,11 @@ import { useState } from "react";
 import Success from "./icons/Success";
 import Link from "next/link";
 
-function AccountSuccessModal() {
+interface Props {
+  role: string
+}
+
+function AccountSuccessModal({role} : Props ) {
   const [isLoading, setIsLoading] = useState(false);
 
   return (
@@ -16,10 +20,10 @@ function AccountSuccessModal() {
         <p className="font-medium text-lg">Successful</p>
         <p className="font-normal text-[#989898] text-sm w-[233px]  mx-auto">
           You account has been successfully created. Click the button below to
-          login to your account
+          get to your dashboard
         </p>
         <div className="py-3">
-         <Link href="/login">
+         <Link href={`/dashboard/${role}`} >
          <Button
           className="w-full bg-primary hover:bg-primary/90 active:scale-[0.98] transition-transform duration-150"
             type="submit"

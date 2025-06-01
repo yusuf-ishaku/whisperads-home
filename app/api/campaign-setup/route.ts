@@ -4,7 +4,6 @@ const baseUrl = process.env.BASE_URL || "";
 
 export async function POST(request: NextRequest) {
   try {
-    // Get authorization header
     const authHeader = request.headers.get("authorization");
     if (!authHeader) {
       throw {
@@ -13,15 +12,12 @@ export async function POST(request: NextRequest) {
       };
     }
 
-    // Extract token
     const authToken = authHeader.startsWith("Bearer ")
       ? authHeader.split(" ")[1]
       : authHeader;
 
-    // Get user data from request body
     const { campaignData, userData } = await request.json();
 
-    // Verify required fields
     if (!userData?.advertiserId) {
       throw {
         message: "User information is required",
@@ -33,7 +29,7 @@ export async function POST(request: NextRequest) {
       ...campaignData,
       advertiserId: userData.advertiserId,
       createdBy: userData.id,
-      status: "draft" // Default status
+      status: "draft" 
     };
 
     const res = await fetch(`${baseUrl}/campaigns/create`, {

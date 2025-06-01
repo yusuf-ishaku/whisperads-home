@@ -1,25 +1,38 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import Image from "next/image"
-import { Button } from "@/components/ui/button"
-import { ArrowLeft } from "lucide-react"
+import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
 
 export default function ChooseRole() {
-  const router = useRouter()
-  const [selectedRole, setSelectedRole] = useState<string | null>(null)
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const [selectedRole, setSelectedRole] = useState<string | null>(null);
+
+  const handleRoleSelect = (selectedRole: string) => {
+    const redirect = searchParams.get("redirect") || "/create-account";
+    router.push(`${redirect}?role=${selectedRole.toLowerCase()}`);
+  };
 
   const handleProceed = () => {
     if (selectedRole) {
-      router.push(`/create-account?role=${selectedRole.toLowerCase()}`)
+      handleRoleSelect(selectedRole);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-background">
       <header className="bg-primary p-4 flex items-center gap-2">
-        <Button variant="ghost" size="icon" className="text-white" onClick={() => router.back()}>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="text-white"
+          onClick={() => router.back()}
+        >
           <ArrowLeft className="h-6 w-6" />
         </Button>
         <h1 className="text-white text-lg font-bold">Sign Up</h1>
@@ -36,12 +49,16 @@ export default function ChooseRole() {
             />
           </div>
           <h2 className="font-medium text-lg  mb-2">Choose Your Role</h2>
-          <p className="text-[#00000080] text-xs mb-6">Sign up for the role that fits you</p>
+          <p className="text-[#00000080] text-xs mb-6">
+            Sign up for the role that fits you
+          </p>
 
           <div className="grid grid-cols-2 gap-4 mb-6">
             <button
               className={`p-4 rounded-xl border-2 transition-all ${
-                selectedRole === "Advertiser" ? "border-primary bg-primary/5" : "border-gray-200"
+                selectedRole === "Advertiser"
+                  ? "border-primary bg-primary/5"
+                  : "border-gray-200"
               }`}
               onClick={() => setSelectedRole("Advertiser")}
             >
@@ -49,7 +66,9 @@ export default function ChooseRole() {
             </button>
             <button
               className={`p-4 rounded-xl border-2 transition-all ${
-                selectedRole === "Agent" ? "border-primary bg-primary/5" : "border-gray-200"
+                selectedRole === "Agent"
+                  ? "border-primary bg-primary/5"
+                  : "border-gray-200"
               }`}
               onClick={() => setSelectedRole("Agent")}
             >
@@ -57,12 +76,16 @@ export default function ChooseRole() {
             </button>
           </div>
 
-          <Button className="w-full rounded-xl" size="lg" disabled={!selectedRole} onClick={handleProceed}>
+          <Button
+            className="w-full rounded-xl"
+            size="lg"
+            disabled={!selectedRole}
+            onClick={handleProceed}
+          >
             Proceed
           </Button>
         </div>
       </div>
     </div>
-  )
+  );
 }
-

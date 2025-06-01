@@ -13,17 +13,9 @@ function FundWalletFailureModal() {
          <div className="flex justify-center">
            <Failure />
          </div>
-         <p className="font-medium text-lg"> Your Wallet Has Been Funded</p>
-         <p className="font-normal text-[#989898] text-sm w-[233px]  mx-auto">
-         ₦5000 has been credited to your WhisperAds wallet.
-         </p>
-         <div className="py-3">
-           <Link href={"/dashboard/target-audience"}>
-             <Button type="submit" className="w-full" disabled={isLoading}>
-               {isLoading ? "Loading..." : "Continue"}
-             </Button>
-           </Link>
-         </div>
+         <p className="font-medium text-lg">Fund wallet failed</p>
+         
+         
        </div>
      </div>
    );

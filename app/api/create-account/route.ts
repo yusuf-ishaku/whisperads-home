@@ -28,7 +28,6 @@ export async function POST(request: NextRequest) {
       };
     }
 
-    // Standardized response with all essential user data
     return NextResponse.json({
       user: {
         id: responseData.id,
