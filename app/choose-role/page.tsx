@@ -14,7 +14,7 @@ export default function ChooseRole() {
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
 
   const handleRoleSelect = (selectedRole: string) => {
-    const redirect = searchParams.get("redirect") || "/create-account";
+    const redirect = searchParams.get("redirect") ?  `/${searchParams.get("redirect")}` : "/login";
     router.push(`${redirect}?role=${selectedRole.toLowerCase()}`);
   };
 
@@ -35,7 +35,7 @@ export default function ChooseRole() {
         >
           <ArrowLeft className="h-6 w-6" />
         </Button>
-        <h1 className="text-white text-lg font-bold">Sign Up</h1>
+        <h1 className="text-white text-lg font-bold">Role Selection</h1>
       </header>
       <div className="p-4 max-w-md mx-auto">
         <div className="bg-white rounded-lg p-6 shadow-sm">

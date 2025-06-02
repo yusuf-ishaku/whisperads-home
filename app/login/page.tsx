@@ -137,7 +137,7 @@ function Login({ params }: { params: { role: string } }) {
 
               <p className="text-sm font-normal">
                 Don&apos;t have an account?
-                <Link className="text-primary px-1" href="/create-account">
+                <Link className="text-primary px-1" href={`/create-account?role=${role?.toLowerCase()}`}>
                   Register
                 </Link>
               </p>
