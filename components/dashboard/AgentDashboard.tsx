@@ -10,6 +10,7 @@ import BottomNavigation from "./BottomNavigation";
 import AgentStats from "./AgentStats";
 import AgentBottomNav from "./AgentBottomNav";
 import AvailableCampaigns from "./AvailableCampaigns";
+import Link from "next/link";
 
 export default function AgentDashboard() {
   const [walletBalance, setWalletBalance] = useState(0);
@@ -60,7 +61,12 @@ export default function AgentDashboard() {
         <UserGreeting name={"Agent"} />
         <AgentStats />
         <ActiveCampaigns />
-        <AvailableCampaigns/>
+        <AvailableCampaigns />
+        <div className="flex justify-center items-center mt-3 mb-12">
+          <Link href="/dashboard/agent/available-campaigns" className="bg-primary py-1 px-2  text-white text-xs rounded-[0.5rem]">
+            see more ads
+          </Link>
+        </div>
       </div>
       <AgentBottomNav />
     </>

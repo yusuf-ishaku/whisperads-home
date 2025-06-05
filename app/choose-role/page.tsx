@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
-export default function ChooseRole() {
+function ChooseRoleContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -18,7 +18,7 @@ export default function ChooseRole() {
     router.push(`${redirect}?role=${selectedRole.toLowerCase()}`);
   };
 
-  const handleProceed = () => {
+   const handleProceed = () => {
     if (selectedRole) {
       handleRoleSelect(selectedRole);
     }
@@ -88,4 +88,16 @@ export default function ChooseRole() {
       </div>
     </div>
   );
+  
+}
+
+
+export default function ChooseRole() {
+ return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ChooseRoleContent />
+    </Suspense>
+  );
+
+  
 }
