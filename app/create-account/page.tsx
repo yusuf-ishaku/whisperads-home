@@ -109,7 +109,7 @@ function CreateAccountContent({ params }: { params: { role: string } }) {
                 <p className="text-sm font-normal">Selected Role: {role}</p>
                 <p className="text-sm font-normal">
                   Already have an account?
-                  <Link className="text-primary px-1" href="/login">
+                  <Link className="text-primary px-1" href={`/login?role=${role?.toLowerCase()}`}>
                     Login
                   </Link>
                 </p>
