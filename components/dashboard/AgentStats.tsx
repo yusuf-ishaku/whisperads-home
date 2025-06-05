@@ -13,7 +13,7 @@ function AgentStats() {
                 <p>Total Campaigns Posted</p>
             </div>
             <div>
-                <p>12</p>
+                <p>0</p>
             </div>
         </div>
       <div className="grid grid-cols-2 gap-4">
@@ -21,13 +21,13 @@ function AgentStats() {
           <p className="text-sm font-medium text-[#00000080]">
             Total Earnings
           </p>
-          <p className="font-bold"> ₦300,000</p>
+          <p className="font-bold"> ₦0</p>
         </div>
         <div className="bg-white p-3 rounded-[0.7rem] border border-[#00000080] space-y-1">
           <p className="text-sm font-medium text-[#00000080]">
             Avail. Balance
           </p>
-          <p className="font-semibold text-sm">₦50,000</p>
+          <p className="font-semibold text-sm">₦0</p>
           <button className="text-[10px] text-primary px-2 py-0.5 rounded-full mt-1 flex gap-3 border border-primary items-center">
             Request Withdrawal
             <DashboardRight />
