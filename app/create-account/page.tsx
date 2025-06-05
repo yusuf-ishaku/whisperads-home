@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -23,7 +23,8 @@ import Google from "@/components/icons/Google";
 import { useSearchParams } from "next/navigation";
 import AccountSuccessModal from "@/components/AccountSuccessModal";
 
-function CreateAccount({ params }: { params: { role: string } }) {
+
+function CreateAccountContent({ params }: { params: { role: string } }) {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -212,4 +213,11 @@ function CreateAccount({ params }: { params: { role: string } }) {
   );
 }
 
-export default CreateAccount;
+export default function CreateAccount({ params }: { params: { role: string } }) {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <CreateAccountContent params={params} />
+    </Suspense>
+  );
+}
+

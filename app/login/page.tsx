@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -24,7 +24,7 @@ import Google from "@/components/icons/Google";
 import { useSearchParams } from "next/navigation";
 import AccountSuccessModal from "@/components/AccountSuccessModal";
 
-function Login({ params }: { params: { role: string } }) {
+function LoginContent({ params }: { params: { role: string } }) {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -48,25 +48,6 @@ function Login({ params }: { params: { role: string } }) {
       setRole(roleParam);
     }
   }, [searchParams]);
-
-  //   useEffect(() => {
-  //     // Check for existing session
-  //     const user =  sessionStorage.getItem("user");
-  //     const token = sessionStorage.getItem("token");
-
-  //     if (user && token) {
-  //       router.push("/dashboard/ad-creation");
-  //     }
-  //   }, []);
-
-  // useEffect(() => {
-  //   const roleParam = searchParams.get("role");
-  //   if (!roleParam) {
-  //     router.push("/choose-role?redirect=/login");
-  //   } else {
-  //     setRole(roleParam);
-  //   }
-  // }, [searchParams]);
 
   async function onSubmit(data: SignUpValues) {
     setIsLoading(true);
@@ -96,15 +77,6 @@ function Login({ params }: { params: { role: string } }) {
       sessionStorage.setItem("user", JSON.stringify(result.user));
       sessionStorage.setItem("token", result.token);
 
-      // const userRole = result.user.role.toString().toLowerCase();
-      // if (userRole === 'advertiser') {
-      //   router.push('/dashboard/advertiser/wallet');
-      // } else if (userRole === 'agent') {
-      //   router.push('/dashboard/agent/agent-dashboard');
-      // } else {
-      //   router.push('/dashboard');
-      // }
-      //  setShowSuccessModal(true);
     } catch (error) {
       console.error(error);
       form.setError("root", {
@@ -252,4 +224,12 @@ function Login({ params }: { params: { role: string } }) {
   );
 }
 
-export default Login;
+export default function Login({ params }: { params: { role: string } }) {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading login page...</div>}>
+      <LoginContent params={params} />
+    </Suspense>
+  );
+}
+
+
