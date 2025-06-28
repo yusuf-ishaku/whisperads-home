@@ -5,7 +5,7 @@ import Link from "next/link";
 import React from "react";
 
 import { useState, useEffect, Suspense } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, Eye, EyeOff } from "lucide-react";
@@ -21,14 +21,15 @@ import {
 } from "@/components/ui/form";
 import { signUpSchema, type SignUpValues } from "@/lib/validations/auth";
 import Google from "@/components/icons/Google";
-import { useSearchParams } from "next/navigation";
-import AccountSuccessModal from "@/components/AccountSuccessModal";
+import LoginSuccessModal from "@/components/LoginSuccessModal";
+import { useAuthCheck } from "@/hooks/useAuth";
 
-function LoginContent({ params }: { params: { role: string } }) {
+function LoginContent() {
+  useAuthCheck();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const searchParams = useSearchParams();
   const [role, setRole] = useState<string | null>(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
@@ -37,55 +38,155 @@ function LoginContent({ params }: { params: { role: string } }) {
     defaultValues: {
       email: "",
       password: "",
+      rememberMe: false,
     },
   });
 
   useEffect(() => {
-    const roleParam = searchParams.get("role");
+    const roleParam =
+      searchParams.get("role") || sessionStorage.getItem("tempRole");
+
     if (!roleParam) {
       router.push("/choose-role");
     } else {
       setRole(roleParam);
+      sessionStorage.removeItem("tempRole");
     }
-  }, [searchParams]);
+  }, [searchParams, router]);
+
+  // async function onSubmit(data: SignUpValues) {
+  //   setIsLoading(true);
+  //   try {
+  //     if (!role) {
+  //       throw new Error("Role is missing");
+  //     }
+
+  //     const response = await fetch("/api/login", {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify({
+  //         ...data,
+  //         role,
+  //       }),
+  //     });
+
+  //     if (!response.ok) {
+  //       const errorData = await response.json();
+  //       throw new Error(errorData.message || "Login failed");
+  //     }
+
+  //     const result = await response.json();
+  //     console.log("Login API Response:", result);
+
+  //   // Validate the response data
+  //   if (!result.user?.role) {
+  //     throw new Error("Role information missing in response");
+  //   }
+
+  //   // Normalize role with fallback
+  //   const normalizedRole = (result.user.role || role || '').toString().toLowerCase();
+  //   if (!['agent', 'advertiser'].includes(normalizedRole)) {
+  //     throw new Error("Invalid role received");
+  //   }
+
+  //   // Store auth data
+  //   sessionStorage.setItem("token", result.token);
+  //   sessionStorage.setItem("user", JSON.stringify({
+  //     ...result.user,
+  //     role: normalizedRole // Store normalized role
+  //   }));
+
+  //    // Check if profile is complete
+  //   const profileComplete = Boolean(result.user.profileComplete);
+
+  //   if (profileComplete) {
+  //     router.push(`/dashboard/${normalizedRole}`);
+  //   } else {
+  //     router.push(`/dashboard/${normalizedRole}/create-profile`);
+  //   }
+  //   } catch (error) {
+  //     console.error(error);
+  //     form.setError("root", { message: (error as Error).message });
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // }
+
 
   async function onSubmit(data: SignUpValues) {
-    setIsLoading(true);
-    try {
-      if (!role) {
-        throw new Error("Role is missing");
-      }
-
-      const response = await fetch("/api/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          ...data,
-          role,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Login failed");
-      }
-
-      const result = await response.json();
-
-      sessionStorage.setItem("user", JSON.stringify(result.user));
-      sessionStorage.setItem("token", result.token);
-
-    } catch (error) {
-      console.error(error);
-      form.setError("root", {
-        message: (error as Error).message || "Login failed. Please try again.",
-      });
-    } finally {
-      setIsLoading(false);
+  setIsLoading(true);
+  try {
+    if (!role) {
+      throw new Error("Role is missing");
     }
+
+    // 1. Perform login
+    const loginResponse = await fetch("/api/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        ...data,
+        role,
+      }),
+    });
+
+    if (!loginResponse.ok) {
+      const errorData = await loginResponse.json();
+      throw new Error(errorData.message || "Login failed");
+    }
+
+    const result = await loginResponse.json();
+    console.log("Login API Response:", result);
+
+    // Validate the response data
+    if (!result.user?.role) {
+      throw new Error("Role information missing in response");
+    }
+
+    // Normalize role
+    const normalizedRole = result.user.role.toLowerCase();
+    if (!['agent', 'advertiser'].includes(normalizedRole)) {
+      throw new Error("Invalid role received");
+    }
+
+    // Store auth data
+    const storage = data.rememberMe ? localStorage : sessionStorage;
+    storage.setItem("token", result.token);
+    storage.setItem("user", JSON.stringify(result.user));
+
+    // 2. Check profile status
+    const profileCheck = await fetch("/api/profile", {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${result.token}`
+      }
+    });
+
+    const profileData = await profileCheck.json();
+    console.log("Profile check result:", profileData);
+
+    // 3. Redirect based on profile status
+    if (profileData.hasProfile || result.user.profileComplete) {
+      router.push(`/dashboard/${normalizedRole}`);
+    } else {
+      router.push(`/dashboard/${normalizedRole}/create-profile`);
+    }
+
+  } catch (error) {
+    console.error(error);
+    form.setError("root", { 
+      message: error instanceof Error ? error.message : "Login failed" 
+    });
+  } finally {
+    setIsLoading(false);
   }
+}
+
+
 
   useEffect(() => {
     console.log("Form Errors:", form.formState.errors);
@@ -93,7 +194,12 @@ function LoginContent({ params }: { params: { role: string } }) {
 
   return (
     <main className="text-5xl text-black font-bold h-screen">
-      {showSuccessModal && <AccountSuccessModal role={role || ""} />}
+      {showSuccessModal && (
+        <LoginSuccessModal
+          role={role || ""}
+          onClose={() => setShowSuccessModal(false)}
+        />
+      )}
 
       <div className="w-full h-[55px] text-white text-center p-1 bg-primary"></div>
       <div className="flex flex-col mt-10">
@@ -172,7 +278,7 @@ function LoginContent({ params }: { params: { role: string } }) {
                 />
 
                 <div className="flex justify-between items-center">
-                  <div className="flex items-center py-3">
+                  {/* <div className="flex items-center py-3">
                     <input type="checkbox" name="remember me" id="rememberMe" />
                     <label
                       htmlFor="remember"
@@ -180,7 +286,33 @@ function LoginContent({ params }: { params: { role: string } }) {
                     >
                       Remember me
                     </label>
-                  </div>
+                  </div> */}
+
+                  <FormField
+                    control={form.control}
+                    name="rememberMe"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <div className="flex items-center py-3">
+                            <input
+                              type="checkbox"
+                              id="rememberMe"
+                              checked={field.value}
+                              onChange={(e) => field.onChange(e.target.checked)}
+                              className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                            />
+                            <label
+                              htmlFor="rememberMe"
+                              className="ml-1 text-xs text-gray-500 font-normal"
+                            >
+                              Remember me
+                            </label>
+                          </div>
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
 
                   <div>
                     <p className="text-xs text-[#009444] font-normal">
@@ -226,10 +358,14 @@ function LoginContent({ params }: { params: { role: string } }) {
 
 export default function Login({ params }: { params: { role: string } }) {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading login page...</div>}>
-      <LoginContent params={params} />
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          Loading login page...
+        </div>
+      }
+    >
+      <LoginContent />
     </Suspense>
   );
 }
-
-

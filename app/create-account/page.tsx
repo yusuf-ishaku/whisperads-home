@@ -24,7 +24,7 @@ import { useSearchParams } from "next/navigation";
 import AccountSuccessModal from "@/components/AccountSuccessModal";
 
 
-function CreateAccountContent({ params }: { params: { role: string } }) {
+function CreateAccountContent() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -40,15 +40,16 @@ function CreateAccountContent({ params }: { params: { role: string } }) {
     },
   });
 
-  useEffect(() => {
-    const roleParam = searchParams.get("role");
+   useEffect(() => {
+    const roleParam = searchParams.get("role") || sessionStorage.getItem('tempRole');
+    
     if (!roleParam) {
       router.push("/choose-role");
     } else {
-      console.log("params:", roleParam);
       setRole(roleParam);
+      sessionStorage.removeItem('tempRole');
     }
-  }, [searchParams]);
+  }, [searchParams, router]);
 
   async function onSubmit(data: SignUpValues) {
     setIsLoading(true);
@@ -81,15 +82,12 @@ function CreateAccountContent({ params }: { params: { role: string } }) {
       setShowSuccessModal(true);
     } catch (error) {
       console.error(error);
-      // Handle error display to user
+      form.setError("root", { message: (error as Error).message });
     } finally {
       setIsLoading(false);
     }
   }
 
-  useEffect(() => {
-    console.log("Form Errors:", form.formState.errors);
-  }, [form.formState.errors]);
 
   return (
     <>
@@ -216,7 +214,7 @@ function CreateAccountContent({ params }: { params: { role: string } }) {
 export default function CreateAccount({ params }: { params: { role: string } }) {
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      <CreateAccountContent params={params} />
+      <CreateAccountContent  />
     </Suspense>
   );
 }

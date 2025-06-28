@@ -1,6 +1,7 @@
 "use client"
 
 import { CheckCircle } from "lucide-react"
+import Link from "next/link"
 
 interface SuccessModalProps {
   onContinue: () => void
@@ -17,14 +18,15 @@ export default function ProfileSuccessModal({ onContinue }: SuccessModalProps) {
 
           <h2 className="text-xl font-semibold mb-2">Successful</h2>
 
-          <p className="text-gray-600 mb-8">Your agent profile set up was successful and is under reviewed.</p>
+          <p className="text-gray-600 mb-8">Your agent profile set up was successful and is under review.</p>
 
-          <button
+          <Link
+            href="/dashboard/agent"
             onClick={onContinue}
             className="w-full bg-primary text-white py-3 rounded-md font-medium hover:bg-green-700 transition-colors"
           >
             Continue
-          </button>
+          </Link>
         </div>
       </div>
     </div>
