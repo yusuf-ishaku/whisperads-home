@@ -31,7 +31,7 @@ export default function Reports() {
 
         {/* Ads Metrics Card */}
         <Card className="p-4 rounded-3xl shadow-sm">
-          <h2 className="text-sm font-medium mb-4">Ads Metrics</h2>
+          <h2 className="text-sm font-medium mb-4">Ad Metrics</h2>
           <div className="grid grid-cols-3 gap-2">
             <AdMetrics value="120" label="Total Campaigns" />
             <AdMetrics value="₦950,000" label="Total Spent" className="border-x border-gray-200" />
@@ -41,7 +41,7 @@ export default function Reports() {
 
         {/* Activities Card */}
         <Card className=" shadow-0 border-0">
-          <h2 className="text-sm font-medium my-4">Activities</h2>
+          <h2 className="text-sm font-medium my-4">Your Activities</h2>
           <div className="space-y-3">
             <ActivityItem
               description="You created an ad for Reach Wears"
