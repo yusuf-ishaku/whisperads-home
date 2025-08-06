@@ -62,11 +62,7 @@ export default function AgentDashboard() {
         <AgentStats />
         <ActiveCampaigns />
         <AvailableCampaigns />
-        <div className="flex justify-center items-center mt-3 mb-12">
-          <Link href="/dashboard/agent/available-campaigns" className="bg-primary py-1 px-2  text-white text-xs rounded-[0.5rem]">
-            see more ads
-          </Link>
-        </div>
+       
       </div>
       <AgentBottomNav />
     </>

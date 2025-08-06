@@ -1,6 +1,8 @@
 "use client";
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+
+import { useEffect, useState } from "react";
+import { useRouter, usePathname } from "next/navigation";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 export default function AdvertiserLayout({
   children,
@@ -8,17 +10,53 @@ export default function AdvertiserLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
+    const pathname = usePathname();
+  const [authStatus, setAuthStatus] = useState<"loading" | "authorized" | "unauthorized">("loading");
 
   useEffect(() => {
-    const user = JSON.parse(sessionStorage.getItem("user") || "{}");
-    if (!user?.role || user.role.toLowerCase() !== 'advertiser') {
-      router.replace('/unauthorized');
-    }
-  }, []);
+    if (typeof window === "undefined") return;
 
-  return (
-    <div className="advertiser-dashboard">
-      {children}
-    </div>
-  );
+     const checkAuth = () => {
+    const token = sessionStorage.getItem("token");
+    const userString = sessionStorage.getItem("user");
+
+    if (pathname?.includes("/create-profile")) {
+        setAuthStatus("authorized");
+        return;
+      }
+    
+    if (!token || !userString) {
+      router.push("/login?redirect=/advertiser");
+      return;
+    }
+
+    try {
+      const user = JSON.parse(userString);
+      const userRole = (user?.role || '').toString().toLowerCase();
+      
+      // Validate role
+      if (userRole !== "agent") { // or "advertiser"
+        setAuthStatus("unauthorized");
+        return;
+      }
+
+     
+
+      setAuthStatus("authorized");
+    } catch (error) {
+      console.error("Error parsing user data:", error);
+      router.push("/login?redirect=/advertiser"); // or /advertiser
+    }
+  };
+    const timer = setTimeout(checkAuth, 100);
+    return () => clearTimeout(timer);
+  }, [router]);
+
+  if (authStatus === "loading") return <LoadingSpinner />;
+  if (authStatus === "unauthorized") {
+    router.push("/unauthorized");
+    return <LoadingSpinner />;
+  }
+
+  return <div className="advertiser-dashboard">{children}</div>;
 }
