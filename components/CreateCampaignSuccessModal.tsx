@@ -18,7 +18,7 @@ function CreateCampaignSuccessModal() {
           Campaign Created!
         </p>
         <div className="py-3">
-          <Link href={"/dashboard/target-audience"}>
+          <Link href={"/dashboard/advertiser/target-audience"}>
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? "Loading..." : "Continue"}
             </Button>

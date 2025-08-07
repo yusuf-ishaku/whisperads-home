@@ -66,3 +66,41 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+export async function GET(req: NextRequest) {
+  const authHeader = req.headers.get("authorization");
+  
+  if (!authHeader) {
+    return NextResponse.json(
+      { message: "Authorization token is required" }, 
+      { status: 401 }
+    );
+  }
+
+  try {
+    const response = await fetch(`${baseUrl}/campaigns/match`, {
+      method: "GET",
+      headers: {
+        "Authorization": authHeader
+      }
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      return NextResponse.json(
+        { message: errorText || "Failed to fetch campaigns" },
+        { status: response.status }
+      );
+    }
+
+    const data = await response.json();
+    return NextResponse.json(data);
+
+  } catch (error: any) {
+    console.error("Campaign fetch error:", error);
+    return NextResponse.json(
+      { message: error.message || "Internal Server Error" },
+      { status: 500 }
+    );
+  }
+}

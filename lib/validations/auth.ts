@@ -9,6 +9,7 @@ export const signUpSchema = z.object({
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
       "Password must contain at least one uppercase letter, one lowercase letter, and one number"
     ),
+    rememberMe: z.boolean().optional(),
   // whatsappNumber: z
   //   .string()
   //   .min(10, "Please enter a valid WhatsApp number")

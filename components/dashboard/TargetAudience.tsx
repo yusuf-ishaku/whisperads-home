@@ -27,7 +27,7 @@ function SetUpCampaign() {
         <h1 className="text-white text-lg font-medium">Target Audience</h1>
       </header>
 
-      <div className="p-4">
+      <div className="p-4 max-w-[400px] mx-auto">
         <div className="px-4 py-4 relative overflow-hidden">
           <div className="bg-primary rounded-xl p-4 flex justify-between items-center relative h-[149px]">
             {/* Left Text Content */}

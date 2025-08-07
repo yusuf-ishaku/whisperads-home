@@ -7,14 +7,16 @@ import { ChevronLeft } from "lucide-react"
 import Image from "next/image"
 
 interface SecondScreenProps {
-  onSubmit: (data: {
+    onSubmit: (data: {
     location: string
     statusViewCount: string
     screenshot: File | null
   }) => void
+  isSubmitting: boolean
+  error: string
 }
 
-export default function ProfileSecondScreen({ onSubmit }: SecondScreenProps) {
+export default function ProfileSecondScreen({ onSubmit, isSubmitting, error  }: SecondScreenProps) {
   const [location, setLocation] = useState("")
   const [statusViewCount, setStatusViewCount] = useState("")
   const [screenshot, setScreenshot] = useState<File | null>(null)
@@ -115,14 +117,21 @@ export default function ProfileSecondScreen({ onSubmit }: SecondScreenProps) {
               </div>
               <p className="text-xs text-gray-500 mt-1">Max. file size 2MB. Supported formats: JPEG, PNG</p>
             </div>
+
+            {error && (
+            <div className="text-red-500 text-sm p-2 bg-red-50 rounded">
+              {error}
+            </div>
+          )}
           </div>
 
-          <button
-            type="submit"
-            className="w-full bg-primary text-white py-3 rounded-[0.5rem] mt-8 font-medium hover:bg-green-700 transition-colors"
-          >
-            Submit
-          </button>
+           <button
+          type="submit"
+          className="w-full bg-primary text-white py-3 rounded-[0.5rem] mt-8 font-medium hover:bg-green-700 transition-colors disabled:opacity-50"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? "Submitting..." : "Submit"}
+        </button>
         </form>
       </div>
     </div>

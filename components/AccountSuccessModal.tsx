@@ -23,7 +23,7 @@ function AccountSuccessModal({role} : Props ) {
           get to your dashboard
         </p>
         <div className="py-3">
-         <Link href={`/dashboard/${role}`} >
+         <Link href={`/dashboard/${role}/create-profile`} >
          <Button
           className="w-full bg-primary hover:bg-primary/90 active:scale-[0.98] transition-transform duration-150"
             type="submit"

@@ -37,63 +37,55 @@ export default function AvailableCampaignsPage() {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-        try {
-        const dummyData: Campaign[] = [
-          {
-            id: "1",
-            company: "Logy Cosmetics",
-            title: "Summer Beach Collection",
-            description: "New summer collection with 30% discount on all items",
-            image: "/ad-one.png",
-            logo: "/campaign-profile.png",
-            budget: "₦150,000",
-            status: "Active",
-            startDate: "2023-05-01",
-            endDate: "2023-06-30",
-            benefits: [
-              "Hydrates and nourishes skin",
-              "Reduces dark spots",
-              "Reveals brighter complexion"
-            ],
-            offer: "Limited Time Offer: Buy One, Get One 50% Off!",
-            gender: "All genders",
-            views: 5231,
-            clicks: 812
-          },
-          {
-            id: "2",
-            company: "Tech Haven",
-            title: "Gadget Extravaganza",
-            description: "Latest tech gadgets with free shipping nationwide",
-            image: "/ad-two.png",
-            logo: "/campaign-profile.png",
-            budget: "₦250,000",
-            status: "Active",
-            startDate: "2023-06-15",
-            endDate: "2023-07-15",
-            benefits: [
-              "Latest technology",
-              "Free shipping",
-              "1-year warranty"
-            ],
-            offer: "Early Bird Special: 15% Off First 100 Orders!",
-            gender: "All genders",
-            views: 6785,
-            clicks: 543
-          },
-          // ... (keep your other dummy data)
-        ];
+    const fetchCampaigns = async () => {
+      try {
+        const token = sessionStorage.getItem("token");
+        if (!token) {
+          throw new Error("Not authenticated");
+        }
+
+        const response = await fetch("/api/campaigns", {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${token}`
+          }
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || "Failed to fetch campaigns");
+        }
+
+        const data = await response.json();
         
-        setCampaigns(dummyData);
-        setLoading(false);
-      } catch (error) {
-        setError("Failed to load campaigns");
+        // Transform API data to match our component's expected format
+        const transformedCampaigns = data.map((item: any) => ({
+          id: item.campaign.id,
+          title: item.campaign.title,
+          company: "Advertiser Company", // You might want to fetch this from another endpoint
+          description: item.campaign.caption,
+          image: item.campaign.mediaUrl || "/default-campaign-image.png",
+          logo: "/default-company-logo.png",
+          budget: item.campaign.budget,
+          status: item.campaign.status.toLowerCase() === "active" ? "Active" : "Inactive",
+          startDate: item.campaign.startDate,
+          endDate: item.campaign.endDate,
+          benefits: ["Benefit 1", "Benefit 2"], // Add actual benefits if available
+          offer: "Special offer", // Add actual offer if available
+          gender: item.campaign.targetingRules?.genders?.join(", ") || "All genders",
+          views: Math.floor(Math.random() * 10000), // Replace with actual views if available
+          clicks: Math.floor(Math.random() * 1000) // Replace with actual clicks if available
+        }));
+
+        setCampaigns(transformedCampaigns);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to load campaigns");
+      } finally {
         setLoading(false);
       }
-    }, 800);
+    };
 
-    return () => clearTimeout(timer);
+    fetchCampaigns();
   }, []);
 
   
@@ -101,7 +93,6 @@ export default function AvailableCampaignsPage() {
     setSelectedCampaign(campaign);
     setIsSheetOpen(true);
   };
-
 
   if (loading) return (
     <div className="max-w-md mx-auto h-screen flex flex-col bg-gray-100">

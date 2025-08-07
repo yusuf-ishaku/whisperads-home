@@ -1,22 +1,37 @@
-// "use client";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
-// import { useEffect, useState } from "react";
+export function useAuthCheck() {
+  const router = useRouter();
 
-// export function useAuth() {
-//   const [user, setUser] = useState(null);
+  useEffect(() => {
+    const checkAuth = () => {
+      // Check cookies via API route
+      fetch('/api/auth/check', {
+        credentials: 'include'
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.authenticated) {
+          const user = data.user;
+          const normalizedRole = user.role?.toLowerCase();
+          
+          if (normalizedRole && ['agent', 'advertiser'].includes(normalizedRole)) {
+            if (user.profileComplete) {
+              router.push(`/dashboard/${normalizedRole}`);
+            } else {
+              router.push(`/dashboard/${normalizedRole}/create-profile`);
+            }
+          }
+        }
+      })
+      .catch(() => {
+        // Clear any invalid data
+        localStorage.removeItem("user");
+        sessionStorage.removeItem("user");
+      });
+    };
 
-//   useEffect(() => {
-//     const storedUser = sessionStorage.getItem("user");
-//     if (storedUser) setUser(JSON.parse(storedUser));
-//   }, []);
-
-//   return {
-//     user,
-//     isAuthenticated: !!user,
-//     logout: () => {
-//       sessionStorage.removeItem("user");
-//       sessionStorage.removeItem("token");
-//       setUser(null);
-//     }
-//   };
-// }
+    checkAuth();
+  }, [router]);
+}
