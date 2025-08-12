@@ -3,6 +3,7 @@
 import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 interface Campaign {
   campaign: {
@@ -27,6 +28,29 @@ export default function AllCampaigns() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [role, setRole] = useState<string | null>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    // Get role from sessionStorage
+    const userData = sessionStorage.getItem("user");
+    if (userData) {
+      try {
+        const user = JSON.parse(userData);
+        if (user.role) {
+          setRole(user.role.toLowerCase());
+        } else {
+          // If role isn't in user data, redirect to choose-role
+          router.push("/choose-role");
+        }
+      } catch (e) {
+        console.error("Error parsing user data:", e);
+        router.push("/choose-role");
+      }
+    } else {
+      router.push("/choose-role");
+    }
+  }, [router]);
 
   useEffect(() => {
     const fetchCampaigns = async () => {
@@ -39,8 +63,8 @@ export default function AllCampaigns() {
         const response = await fetch("/api/campaigns", {
           method: "GET",
           headers: {
-            "Authorization": `Bearer ${token}`
-          }
+            Authorization: `Bearer ${token}`,
+          },
         });
 
         if (!response.ok) {
@@ -51,44 +75,59 @@ export default function AllCampaigns() {
         const data = await response.json();
         setCampaigns(data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load campaigns");
+        setError(
+          err instanceof Error ? err.message : "Failed to load campaigns"
+        );
       } finally {
         setLoading(false);
       }
     };
+    if (role) {
+      fetchCampaigns();
+    }
+  }, [role]);
 
-    fetchCampaigns();
-  }, []);
+  if (!role) {
+    return (
+      <div className="max-w-md mx-auto h-screen flex flex-col bg-gray-100">
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-gray-500">Loading role information...</div>
+        </div>
+      </div>
+    );
+  }
 
-  if (loading) return (
-    <div className="max-w-md mx-auto h-screen flex flex-col bg-gray-100">
-      <div className="bg-primary text-white px-4 py-1 flex justify-between items-center text-xs"></div>
-      <div className="bg-primary text-white px-4 py-3 flex items-center">
-        <Link href={"/dashboard/agent"}>
-          <ChevronLeft size={24} />
-        </Link>
-        <span className="ml-2 font-medium text-lg">All Campaigns</span>
+  if (loading)
+    return (
+      <div className="max-w-md mx-auto h-screen flex flex-col bg-gray-100">
+        <div className="bg-primary text-white px-4 py-1 flex justify-between items-center text-xs"></div>
+        <div className="bg-primary text-white px-4 py-3 flex items-center">
+          <Link href={`/dashboard/${role}`}>
+            <ChevronLeft size={24} />
+          </Link>
+          <span className="ml-2 font-medium text-lg">All Campaigns</span>
+        </div>
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-gray-500">Loading campaigns...</div>
+        </div>
       </div>
-      <div className="flex-1 flex items-center justify-center">
-        <div className="text-gray-500">Loading campaigns...</div>
-      </div>
-    </div>
-  );
+    );
 
-  if (error) return (
-    <div className="max-w-md mx-auto h-screen flex flex-col bg-gray-100">
-      <div className="bg-primary text-white px-4 py-1 flex justify-between items-center text-xs"></div>
-      <div className="bg-primary text-white px-4 py-3 flex items-center">
-        <Link href={"/dashboard/agent"}>
-          <ChevronLeft size={24} />
-        </Link>
-        <span className="ml-2 font-medium text-lg">All Campaigns</span>
+  if (error)
+    return (
+      <div className="max-w-md mx-auto h-screen flex flex-col bg-gray-100">
+        <div className="bg-primary text-white px-4 py-1 flex justify-between items-center text-xs"></div>
+        <div className="bg-primary text-white px-4 py-3 flex items-center">
+          <Link href={`/dashboard/${role}`}>
+            <ChevronLeft size={24} />
+          </Link>
+          <span className="ml-2 font-medium text-lg">All Campaigns</span>
+        </div>
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-red-500">{error}</div>
+        </div>
       </div>
-      <div className="flex-1 flex items-center justify-center">
-        <div className="text-red-500">{error}</div>
-      </div>
-    </div>
-  );
+    );
 
   return (
     <div className="max-w-md mx-auto h-screen flex flex-col bg-gray-100">
@@ -97,7 +136,7 @@ export default function AllCampaigns() {
 
       {/* Header */}
       <div className="bg-primary text-white px-4 py-3 flex items-center">
-        <Link href={"/dashboard/agent"}>
+        <Link href={`/dashboard/${role}`}>
           <ChevronLeft size={24} />
         </Link>
         <span className="ml-2 font-medium text-lg">All Campaigns</span>
@@ -117,8 +156,8 @@ export default function AllCampaigns() {
                 {campaign.mediaUrl && (
                   <div className="mr-3 mt-1">
                     <div className="w-12 h-12 bg-gray-100 rounded-md overflow-hidden">
-                      <img 
-                        src={campaign.mediaUrl} 
+                      <img
+                        src={campaign.mediaUrl}
                         alt={campaign.title}
                         className="w-full h-full object-cover"
                       />
@@ -141,11 +180,13 @@ export default function AllCampaigns() {
                     <div className="text-xs text-gray-500">
                       {calculateDaysRemaining(campaign.endDate)} days remaining
                     </div>
-                    <span className={`text-xs ${
-                      campaign.status === "active" 
-                        ? "text-green-600" 
-                        : "text-yellow-600"
-                    }`}>
+                    <span
+                      className={`text-xs ${
+                        campaign.status === "active"
+                          ? "text-green-600"
+                          : "text-yellow-600"
+                      }`}
+                    >
                       {campaign.status}
                     </span>
                   </div>
@@ -160,7 +201,7 @@ export default function AllCampaigns() {
         ) : (
           <div className="flex flex-col items-center justify-center h-full">
             <div className="text-gray-500">No campaigns available</div>
-            <button 
+            <button
               className="mt-2 text-primary text-sm"
               onClick={() => window.location.reload()}
             >
