@@ -3,6 +3,7 @@
 import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 interface Campaign {
   campaign: {
@@ -27,21 +28,45 @@ export default function AllCampaigns() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [role, setRole] = useState<string | null>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    const userData = sessionStorage.getItem("user");
+    if (userData) {
+      try {
+        const user = JSON.parse(userData);
+        if (user.role) {
+          setRole(user.role.toLowerCase());
+        } else {
+          router.push("/choose-role");
+        }
+      } catch (e) {
+        console.error("Error parsing user data:", e);
+        router.push("/choose-role");
+      }
+    } else {
+      router.push("/choose-role");
+    }
+  }, [router]);
 
   useEffect(() => {
     const fetchCampaigns = async () => {
       try {
         const token = sessionStorage.getItem("token");
+            console.log('Token from sessionStorage:', token); 
+
         if (!token) {
           throw new Error("Not authenticated");
         }
 
-        const response = await fetch("/api/campaigns", {
+        const response = await fetch("https://whisperads-api-production.up.railway.app/campaigns/my-campaigns", {
           method: "GET",
           headers: {
             "Authorization": `Bearer ${token}`
           }
         });
+        console.log('Response status:', response.status);
 
         if (!response.ok) {
           const errorData = await response.json();
@@ -173,7 +198,6 @@ export default function AllCampaigns() {
   );
 }
 
-// Helper function to calculate days remaining
 function calculateDaysRemaining(endDate: string): number {
   const end = new Date(endDate);
   const today = new Date();

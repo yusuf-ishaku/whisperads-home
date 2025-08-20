@@ -52,9 +52,10 @@ export default function ActiveCampaigns() {
     const fetchActiveCampaigns = async () => {
       try {
         const token = sessionStorage.getItem("token");
+          console.log("Token:", token);
         if (!token) throw new Error("Not authenticated");
 
-        const response = await fetch("/api/campaigns", {
+        const response = await fetch("https://whisperads-api-production.up.railway.app/campaigns/my-campaigns", {
           method: "GET",
           headers: { "Authorization": `Bearer ${token}` }
         });

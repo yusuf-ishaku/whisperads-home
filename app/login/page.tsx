@@ -54,66 +54,6 @@ function LoginContent() {
     }
   }, [searchParams, router]);
 
-  // async function onSubmit(data: SignUpValues) {
-  //   setIsLoading(true);
-  //   try {
-  //     if (!role) {
-  //       throw new Error("Role is missing");
-  //     }
-
-  //     const response = await fetch("/api/login", {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify({
-  //         ...data,
-  //         role,
-  //       }),
-  //     });
-
-  //     if (!response.ok) {
-  //       const errorData = await response.json();
-  //       throw new Error(errorData.message || "Login failed");
-  //     }
-
-  //     const result = await response.json();
-  //     console.log("Login API Response:", result);
-
-  //   // Validate the response data
-  //   if (!result.user?.role) {
-  //     throw new Error("Role information missing in response");
-  //   }
-
-  //   // Normalize role with fallback
-  //   const normalizedRole = (result.user.role || role || '').toString().toLowerCase();
-  //   if (!['agent', 'advertiser'].includes(normalizedRole)) {
-  //     throw new Error("Invalid role received");
-  //   }
-
-  //   // Store auth data
-  //   sessionStorage.setItem("token", result.token);
-  //   sessionStorage.setItem("user", JSON.stringify({
-  //     ...result.user,
-  //     role: normalizedRole // Store normalized role
-  //   }));
-
-  //    // Check if profile is complete
-  //   const profileComplete = Boolean(result.user.profileComplete);
-
-  //   if (profileComplete) {
-  //     router.push(`/dashboard/${normalizedRole}`);
-  //   } else {
-  //     router.push(`/dashboard/${normalizedRole}/create-profile`);
-  //   }
-  //   } catch (error) {
-  //     console.error(error);
-  //     form.setError("root", { message: (error as Error).message });
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // }
-
 
   async function onSubmit(data: SignUpValues) {
   setIsLoading(true);
@@ -122,7 +62,6 @@ function LoginContent() {
       throw new Error("Role is missing");
     }
 
-    // 1. Perform login
     const loginResponse = await fetch("/api/login", {
       method: "POST",
       headers: {
@@ -142,23 +81,19 @@ function LoginContent() {
     const result = await loginResponse.json();
     console.log("Login API Response:", result);
 
-    // Validate the response data
     if (!result.user?.role) {
       throw new Error("Role information missing in response");
     }
 
-    // Normalize role
     const normalizedRole = result.user.role.toLowerCase();
     if (!['agent', 'advertiser'].includes(normalizedRole)) {
       throw new Error("Invalid role received");
     }
 
-    // Store auth data
     const storage = data.rememberMe ? localStorage : sessionStorage;
     storage.setItem("token", result.token);
     storage.setItem("user", JSON.stringify(result.user));
 
-    // 2. Check profile status
     const profileCheck = await fetch("/api/profile", {
       method: "GET",
       headers: {
@@ -169,7 +104,6 @@ function LoginContent() {
     const profileData = await profileCheck.json();
     console.log("Profile check result:", profileData);
 
-    // 3. Redirect based on profile status
     if (profileData.hasProfile || result.user.profileComplete) {
       router.push(`/dashboard/${normalizedRole}`);
     } else {
@@ -278,16 +212,6 @@ function LoginContent() {
                 />
 
                 <div className="flex justify-between items-center">
-                  {/* <div className="flex items-center py-3">
-                    <input type="checkbox" name="remember me" id="rememberMe" />
-                    <label
-                      htmlFor="remember"
-                      className="ml-1 text-xs text-gray-500 font-normal"
-                    >
-                      Remember me
-                    </label>
-                  </div> */}
-
                   <FormField
                     control={form.control}
                     name="rememberMe"

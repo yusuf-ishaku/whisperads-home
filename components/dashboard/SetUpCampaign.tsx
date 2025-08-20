@@ -158,29 +158,7 @@ function SetUpCampaign() {
 
         <div className="p-4 mx-auto max-w-[400px] mt-5">
           <div className="px-4 py-4 relative overflow-hidden">
-            {/* <div className="bg-primary rounded-xl p-4 flex justify-between items-center relative h-[149px]">
-              <div className="flex flex-col justify-center h-full w-[317px]">
-                <div className="flex items-center gap-2">
-                  <Dollars />
-                  <h2 className="text-sm font-bold text-white">
-                    Ads on a budget
-                  </h2>
-                </div>
-                <p className="text-xs font-normal text-white py-2 w-[133px]">
-                  Stretch your brand reach, get noticed without overspending.
-                </p>
-              </div>
 
-              <div className="absolute bottom-0 right-4 w-[133px] h-[145px]">
-                <Image
-                  src="/budget-man.png"
-                  alt="Ad Promo"
-                  width={133}
-                  height={145}
-                  className="object-contain"
-                />
-              </div>
-            </div> */}
 
             <AdCarousel/>
 
