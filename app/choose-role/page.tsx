@@ -6,6 +6,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { toast } from "sonner";
 
 function ChooseRoleContent() {
   const router = useRouter();
@@ -26,7 +27,7 @@ function ChooseRoleContent() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="bg-primary p-4 flex items-center gap-2">
+      <header className="bg-primary p-4 flex items-center">
         <Button
           variant="ghost"
           size="icon"

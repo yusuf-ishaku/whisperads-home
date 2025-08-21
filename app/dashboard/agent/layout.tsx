@@ -6,7 +6,7 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 
 export default function AgentLayout({
   children,
-}: {
+}: { 
   children: React.ReactNode;
 }) {
   const router = useRouter();
@@ -35,7 +35,7 @@ export default function AgentLayout({
       const userRole = (user?.role || '').toString().toLowerCase();
       
       // Validate role
-      if (userRole !== "agent") { // or "advertiser"
+      if (userRole !== "agent") { 
         setAuthStatus("unauthorized");
         return;
       }

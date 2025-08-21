@@ -11,6 +11,8 @@ import AgentStats from "./AgentStats";
 import AgentBottomNav from "./AgentBottomNav";
 import AvailableCampaigns from "./AvailableCampaigns";
 import Link from "next/link";
+import AgentActiveCampaigns from "./AgentActiveCampaigns";
+import AgentAvailableCampaigns from "./AgentAvailableCampaigns";
 
 export default function AgentDashboard() {
   const [walletBalance, setWalletBalance] = useState(0);
@@ -60,8 +62,8 @@ export default function AgentDashboard() {
       <div className="p-4 flex flex-col gap-4  max-w-[400px] mx-auto h-screen overflow-y-auto">
         <UserGreeting name={"Agent"} />
         <AgentStats />
-        <ActiveCampaigns />
-        <AvailableCampaigns />
+        <AgentActiveCampaigns/>
+        <AgentAvailableCampaigns/>
        
       </div>
       <AgentBottomNav />

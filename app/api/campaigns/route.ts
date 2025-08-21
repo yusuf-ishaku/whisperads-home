@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const res = await fetch(`${baseUrl}/campaigns/match`, {
+    const res = await fetch(`${baseUrl}/campaigns/my-campaigns`, {
       method: "GET",
       headers: {
         Authorization: authHeader,

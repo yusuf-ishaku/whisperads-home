@@ -35,7 +35,7 @@ interface CampaignCardProps {
   onUploadClick: () => void;
 }
 
-export default function ActiveCampaigns() {
+export default function AgentActiveCampaigns() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -55,7 +55,7 @@ export default function ActiveCampaigns() {
           console.log("Token:", token);
         if (!token) throw new Error("Not authenticated");
 
-        const response = await fetch("https://whisperads-api-production.up.railway.app/campaigns/my-campaigns", {
+        const response = await fetch("https://whisperads-api-production.up.railway.app/campaigns/match", {
           method: "GET",
           headers: { "Authorization": `Bearer ${token}` }
         });

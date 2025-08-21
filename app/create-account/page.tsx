@@ -94,7 +94,17 @@ function CreateAccountContent() {
       {showSuccessModal && <AccountSuccessModal role={role || ""} />}
 
       <main className="text-5xl text-black font-bold h-screen">
-        <div className="w-full h-[55px] text-white text-center p-2 bg-primary"></div>
+         <header className="bg-primary p-4 flex items-center ">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-white"
+                  onClick={() => router.back()}
+                >
+                  <ArrowLeft className="h-6 w-6" />
+                </Button>
+                <h1 className="text-white text-lg font-bold cursor-pointer">Back</h1>
+              </header>
         <div className="flex flex-col mt-10">
           <div className="flex justify-center p-4">
             <Image src="/logo.png" width={34} height={34} alt="logo" />

@@ -24,7 +24,7 @@ interface Campaign {
   score: number;
 }
 
-export default function AllCampaigns() {
+export default function AllAgentCampaigns() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -61,7 +61,7 @@ export default function AllCampaigns() {
         }
 
         const response = await fetch(
-          "/api/campaigns",
+          "https://whisperads-api-production.up.railway.app/campaigns/match",
           {
             method: "GET",
             headers: {

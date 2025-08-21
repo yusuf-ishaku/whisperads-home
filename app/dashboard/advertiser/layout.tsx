@@ -35,7 +35,7 @@ export default function AdvertiserLayout({
       const userRole = (user?.role || '').toString().toLowerCase();
       
       // Validate role
-      if (userRole !== "agent") { // or "advertiser"
+      if (userRole !== "advertiser") { 
         setAuthStatus("unauthorized");
         return;
       }
