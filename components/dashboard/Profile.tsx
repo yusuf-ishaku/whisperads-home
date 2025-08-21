@@ -1,9 +1,14 @@
+"use client";
+
 import React from 'react'
 import { ChevronRight, User, Settings, HelpCircle, Phone, Shield, FileText } from 'lucide-react';
-
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
 function Profile() {
-     const menuItems = [
+  const router = useRouter();
+  
+  const menuItems = [
     { icon: User, label: 'Account', hasChevron: true },
     { icon: Settings, label: 'Preferences', hasChevron: true },
     { icon: HelpCircle, label: 'Help & Support', hasChevron: true },
@@ -11,9 +16,19 @@ function Profile() {
     { icon: Shield, label: 'Terms & Privacy Policy', hasChevron: true }
   ];
 
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    sessionStorage.removeItem('token');
+    sessionStorage.removeItem('user');
+    
+    toast.success('Logged out successfully');
+    
+    router.push('/');
+  };
 
   return (
-     <div className="max-w-full mx-auto bg-white min-h-screen">
+    <div className="max-w-full mx-auto bg-white min-h-screen">
 
       {/* Header */}
       <div className="bg-primary px-4 pt-4 pb-20 relative rounded-b-[3rem]">
@@ -51,6 +66,15 @@ function Profile() {
               )}
             </div>
           ))}
+        </div>
+
+        <div>
+          <button 
+            onClick={handleLogout}
+            className="w-full text-center py-3 px-6 font-bold bg-primary text-white my-5 rounded hover:bg-primary/90 transition-colors"
+          >
+            Log Out
+          </button>
         </div>
       </div>
 

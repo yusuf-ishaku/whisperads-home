@@ -127,11 +127,11 @@ export default function CampaignDashboard() {
       <UserGreeting name={userName} />
       <StatsSummary
         walletBalance={walletBalance}
-        totalCampaigns={12}
-        totalAdSpend={950000}
-        totalImpressions={10500}
-        statusViews={8000}
-        clickThrough={2540}
+        totalCampaigns={0}
+        totalAdSpend={0}
+        totalImpressions={0}
+        statusViews={0}
+        clickThrough={0}
         token={token}
         userId={user?.id || ''}
       userEmail={user?.email || ''}
