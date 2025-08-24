@@ -21,12 +21,35 @@ export default function AdProfileFirstScreen({ onSubmit }: AdFirstScreenProps) {
     const [showSuccess, setShowSuccess] = useState(false)
     const [isFormValid, setIsFormValid] = useState(false)
 
+       const industryOptions = [
+        "Select Industry",
+        "Technology",
+        "Healthcare",
+        "Finance",
+        "Retail",
+        "Education",
+        "Manufacturing",
+        "Real Estate",
+        "Hospitality",
+        "Entertainment",
+        "Transportation",
+        "Energy",
+        "Agriculture",
+        "Construction",
+        "Telecommunications",
+        "Marketing & Advertising",
+        "Non-profit",
+        "Government",
+        "Other"
+    ];
+
     // Check form validity whenever any field changes
     useEffect(() => {
         setIsFormValid(
-            companyName.trim() !== "" && 
+             companyName.trim() !== "" && 
             phoneNumber.trim() !== "" && 
-            industry.trim() !== ""
+            industry.trim() !== "" &&
+            industry !== "Select Industry"
         )
     }, [companyName, phoneNumber, industry])
 
@@ -98,17 +121,21 @@ export default function AdProfileFirstScreen({ onSubmit }: AdFirstScreenProps) {
                         </div>
                         <div>
                             <label htmlFor="industry" className="block text-sm font-semibold mb-1">
-                                Industry
+                                Industry/Niche
                             </label>
-                            <input
+                             <select
                                 id="industry"
-                                type="text"
-                                placeholder="Enter Industry"
-                                className="w-full text-sm p-2 border border-gray-300 rounded-[0.5rem]"
+                                className="w-full text-sm p-2 border border-gray-300 rounded-[0.5rem] bg-white"
                                 value={industry}
                                 onChange={(e) => setIndustry(e.target.value)}
                                 required
-                            />
+                            >
+                                {industryOptions.map((option, index) => (
+                                    <option key={index} value={option}>
+                                        {option}
+                                    </option>
+                                ))}
+                            </select>
                         </div>
                     </div>
 

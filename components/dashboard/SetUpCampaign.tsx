@@ -16,14 +16,23 @@ import { useAuth } from "@/context/auth-context";
 import { PricingModelSelect } from "../PricingModelSelect";
 import AdGoalSelect from "../AdGoalSelect";
 import AdCarousel from "../AdCarousel";
+import { toast } from "sonner";
 
 type CampaignFormInputs = {
   adName: string;
-  pricingModel: string;
+  campaignType: string;
   adGoal: string;
   adDescription: string;
   budget: string;
-  adFile: FileList;
+  startDate: string;
+  endDate: string;
+  // adFile: FileList;
+  perViewAmount?: string;
+  maxBudget?: string;
+  perInfluencerAmount?: string; 
+  influencerCount?: string;
+  amountToSpend?: string; 
+  viewGoal: string; 
 };
 
 const cn = clsx;
@@ -42,25 +51,34 @@ function SetUpCampaign() {
     formState: { errors, isValid },
   } = useForm<CampaignFormInputs>({
     mode: "onChange",
+    defaultValues: {
+    viewGoal: "1000"
+  }
   });
   const router = useRouter();
-  const [selectedFileName, setSelectedFileName] = useState<string | null>(null);
+  // const [selectedFileName, setSelectedFileName] = useState<string | null>(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showDateRange, setShowDateRange] = useState(false);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setSelectedFileName(file.name);
-    } else {
-      setSelectedFileName(null);
-    }
-  };
+
+  // const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const file = e.target.files?.[0];
+  //   if (file) {
+  //     setSelectedFileName(file.name);
+  //   } else {
+  //     setSelectedFileName(null);
+  //   }
+  // };
 
   const { user } = useAuth();
+  const today = new Date().toISOString().split('T')[0];
+const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
   const onSubmit: SubmitHandler<CampaignFormInputs> = async (data) => {
     setLoading(true);
+        const loadingToast = toast.loading('Creating campaign...');
+
 
     try {
       const user = JSON.parse(sessionStorage.getItem("user") || "null");
@@ -70,40 +88,52 @@ function SetUpCampaign() {
         throw new Error("Please log in first - no session found");
       }
 
-      const fileFormData = new FormData();
-      fileFormData.append("file", data.adFile[0]);
+      // const fileFormData = new FormData();
+      // fileFormData.append("file", data.adFile[0]);
 
-      const fileUploadRes = await fetch("/api/upload/file", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: fileFormData,
-      });
+      // const fileUploadRes = await fetch("/api/upload/file", {
+      //   method: "POST",
+      //   headers: {
+      //     Authorization: `Bearer ${token}`,
+      //   },
+      //   body: fileFormData,
+      // });
 
-      const fileUploadResult = await fileUploadRes.json();
-      if (!fileUploadRes.ok) {
-        throw new Error(fileUploadResult.message || "Failed to upload file");
-      }
+      const uploadedFileUrl =
+        "https://res.cloudinary.com/dv5v8l2lr/image/upload/v1738850383/samples/gg9yr8wgycomejpapsqv.png";
 
-      const uploadedFileUrl = fileUploadResult?.data;
-      if (!uploadedFileUrl) {
-        throw new Error("File upload failed: No URL returned");
-      }
+      // const fileUploadResult = await fileUploadRes.json();
+      // if (!fileUploadRes.ok) {
+      //   throw new Error(fileUploadResult.message || "Failed to upload file");
+      // }
 
-     
+      // const uploadedFileUrl = fileUploadResult?.data;
+      // if (!uploadedFileUrl) {
+      //   throw new Error("File upload failed: No URL returned");
+      // }
+
       const campaignPayload = {
         title: data.adName,
-        pricingModel: data.pricingModel,
+        campaignType: data.campaignType,
         adGoal: data.adGoal,
         caption: data.adDescription,
         mediaUrl: uploadedFileUrl,
-        budget: data.budget || 1000, 
-        startDate: new Date().toISOString(),
-        endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        budget: data.budget || 1000,
+        startDate: new Date(data.startDate).toISOString(), 
+      endDate: new Date(data.endDate).toISOString(),
         status: "draft",
-        advertiserId: user.advertiserId, 
-      };
+        advertiserId: user.advertiserId,
+        perViewAmount: data.perViewAmount ? parseFloat(data.perViewAmount) : undefined,
+      perInfluencerAmount: data.perInfluencerAmount ? parseFloat(data.perInfluencerAmount) : undefined,
+      influencerCount: data.influencerCount ? parseInt(data.influencerCount) : undefined,
+      
+      amountToSpend: data.campaignType === "ppv" 
+        ? (data.maxBudget ? parseFloat(data.maxBudget) : 0)
+        : (data.perInfluencerAmount && data.influencerCount 
+            ? parseFloat(data.perInfluencerAmount) * parseInt(data.influencerCount)
+            : 0),
+                  viewGoal: parseInt(data.viewGoal) || 1000
+  };
 
       const createCampaignRes = await fetch("/api/campaign-setup", {
         method: "POST",
@@ -124,18 +154,41 @@ function SetUpCampaign() {
         );
       }
 
+       toast.dismiss(loadingToast);
+      toast.success('Campaign created successfully!');
       setShowSuccessModal(true);
     } catch (error) {
       console.error("Error:", error);
-      if (error instanceof Error && error.message.includes("token")) {
-        sessionStorage.removeItem("user");
-        sessionStorage.removeItem("token");
-        router.push("/login");
+       toast.dismiss(loadingToast);
+       
+      if (error instanceof Error) {
+        if (error.message.includes("token")) {
+          toast.error('Session expired. Please log in again.');
+          sessionStorage.removeItem("user");
+          sessionStorage.removeItem("token");
+          setTimeout(() => {
+            router.push("/login");
+          }, 2000);
+        } else {
+          toast.error(error.message || 'Failed to create campaign');
+        }
+      } else {
+        toast.error('An unexpected error occurred');
       }
     } finally {
       setLoading(false);
     }
   };
+
+  React.useEffect(() => {
+    if (Object.keys(errors).length > 0) {
+      const firstError = Object.values(errors)[0];
+      if (firstError?.message) {
+        toast.error(firstError.message);
+      }
+    }
+  }, [errors]);
+
 
   return (
     <>
@@ -158,9 +211,7 @@ function SetUpCampaign() {
 
         <div className="p-4 mx-auto max-w-[400px] mt-5">
           <div className="px-4 py-4 relative overflow-hidden">
-
-
-            <AdCarousel/>
+            <AdCarousel />
 
             <form
               className="mt-5 relative z-10"
@@ -198,7 +249,7 @@ function SetUpCampaign() {
                   <PricingModelSelect
                     register={register}
                     setValue={setValue}
-                    error={errors.pricingModel}
+                    error={errors.campaignType}
                   />
                 </div>
 
@@ -228,6 +279,186 @@ function SetUpCampaign() {
                 </div>
 
                 <div>
+  <label className="block text-sm font-medium text-black py-1">
+    View Goal
+  </label>
+  <div className="relative">
+    <input
+      type="number"
+      {...register("viewGoal", {
+        required: "View Goal is required",
+        valueAsNumber: true,
+        validate: value => Number(value) > 0 || "View Goal must be greater than 0"
+      })}
+      placeholder="Enter your view goal"
+      className="block w-full border border-gray-300 rounded-[0.5rem] p-3 appearance-none focus:outline-none focus:ring-2 focus:ring-green-500 text-sm text-gray-400"
+    />
+    {errors.viewGoal && (
+      <p className="text-red-500 text-sm mt-1">
+        {errors.viewGoal.message}
+      </p>
+    )}
+  </div>
+</div>
+
+                {/* <div>
+  <label className="block text-sm font-medium text-black py-1">
+    Schedule
+  </label>
+
+  {!showDateRange ? (
+    // INITIAL collapsed input
+    <input
+      type="text"
+      readOnly
+      placeholder="When would you like your ad to start?"
+      onClick={() => setShowDateRange(true)}
+      className="block w-full border border-gray-300 rounded-[0.5rem] p-3 
+                 focus:outline-none focus:ring-2 focus:ring-green-500 
+                 text-sm text-gray-400 cursor-pointer"
+    />
+  ) : (
+    // EXPANDED date range
+    <div className="flex gap-2">
+      <div className="relative flex-1">
+        <input
+          type="date"
+          {...register("startDate", {
+            required: "Start Date is required",
+          })}
+          className="block w-full border border-gray-300 rounded-[0.5rem] p-3 
+                     focus:outline-none focus:ring-2 focus:ring-green-500 
+                     text-sm text-gray-600"
+        />
+        {errors.startDate && (
+          <p className="text-red-500 text-sm mt-1">
+            {errors.startDate.message}
+          </p>
+        )}
+      </div>
+
+      <div className="relative flex-1">
+        <input
+          type="date"
+          {...register("endDate", {
+            required: "End Date is required",
+          })}
+          className="block w-full border border-gray-300 rounded-[0.5rem] p-3 
+                     focus:outline-none focus:ring-2 focus:ring-green-500 
+                     text-sm text-gray-600"
+        />
+        {errors.endDate && (
+          <p className="text-red-500 text-sm mt-1">
+            {errors.endDate.message}
+          </p>
+        )}
+      </div>
+    </div>
+  )}
+</div> */}
+
+<div>
+  <label className="block text-sm font-medium text-black py-1">
+    Schedule
+  </label>
+
+  {!showDateRange ? (
+    <input
+      type="text"
+      readOnly
+      placeholder="When would you like your ad to start?"
+      onClick={() => setShowDateRange(true)}
+      className="block w-full border border-gray-300 rounded-[0.5rem] p-3 
+                 focus:outline-none focus:ring-2 focus:ring-green-500 
+                 text-sm text-gray-400 cursor-pointer"
+    />
+  ) : (
+    <div className="flex gap-2">
+      <div className="relative flex-1">
+        <label className="block text-xs font-medium text-gray-500 mb-1">Start Date</label>
+        <input
+          type="date"
+          {...register("startDate", {
+            required: "Start Date is required",
+            validate: {
+              notPast: value => {
+                const selectedDate = new Date(value);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                return selectedDate >= today || "Start date cannot be in the past";
+              }
+            }
+          })}
+          min={today}
+          className="block w-full border border-gray-300 rounded-[0.5rem] p-3 
+                     focus:outline-none focus:ring-2 focus:ring-green-500 
+                     text-sm text-gray-600"
+        />
+        {errors.startDate && (
+          <p className="text-red-500 text-sm mt-1">
+            {errors.startDate.message}
+          </p>
+        )}
+      </div>
+
+      <div className="relative flex-1">
+        <label className="block text-xs font-medium text-gray-500 mb-1">End Date</label>
+        <input
+          type="date"
+          {...register("endDate", {
+            required: "End Date is required",
+            validate: {
+              notPast: value => {
+                const selectedDate = new Date(value);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                return selectedDate >= today || "End date cannot be in the past";
+              },
+              afterStart: (value, { startDate }) => {
+                if (!startDate) return true;
+                return new Date(value) > new Date(startDate) || "End date must be after start date";
+              }
+            }
+          })}
+          min={tomorrow}
+          className="block w-full border border-gray-300 rounded-[0.5rem] p-3 
+                     focus:outline-none focus:ring-2 focus:ring-green-500 
+                     text-sm text-gray-600"
+        />
+        {errors.endDate && (
+          <p className="text-red-500 text-sm mt-1">
+            {errors.endDate.message}
+          </p>
+        )}
+      </div>
+    </div>
+  )}
+</div>
+              
+
+                <div>
+                  <label className="block text-sm font-normal mb-1">
+                    Ad Preview
+                  </label>
+                  <div className="flex flex-col border border-gray-300 p-3 rounded-[0.5rem]">
+                    <div className="flex items-center justify-center bg-gray-100 rounded p-2">
+                      <Image
+                        src="https://res.cloudinary.com/dv5v8l2lr/image/upload/v1738850383/samples/gg9yr8wgycomejpapsqv.png"
+                        alt="Ad preview"
+                        width={100}
+                        height={100}
+                        className="object-contain"
+                      />
+                    </div>
+                    <p className="text-gray-500 text-xs mt-2 text-center">
+                      Using sample ad image until uploads are fixed
+                    </p>
+                  </div>
+                </div>
+
+                {/* COMMENTED TILL FILE UPLOADS ARE FIXED */}
+
+                {/* <div>
                   <label className="block text-sm font-normal mb-1">
                     Upload Ad file
                   </label>
@@ -265,7 +496,7 @@ function SetUpCampaign() {
                     Max. file video duration: 1 min. Supported formats: JPEG,
                     PNG, MP4.
                   </p>
-                </div>
+                </div> */}
               </div>
 
               {/* Continue Button */}
