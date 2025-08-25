@@ -10,7 +10,7 @@ function TargetAudienceIcon() {
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
       >
-        <g clip-path="url(#clip0_323_17726)">
+        <g clipPath="url(#clip0_323_17726)">
           <path d="M8.5 3.1875L5.3125 0H11.6875L8.5 3.1875Z" fill="white" />
           <path d="M8.5 13.8125L11.6875 17H5.3125L8.5 13.8125Z" fill="white" />
           <path d="M3.1875 8.5L0 11.6875V5.3125L3.1875 8.5Z" fill="white" />
