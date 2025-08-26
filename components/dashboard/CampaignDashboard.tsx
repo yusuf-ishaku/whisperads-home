@@ -113,7 +113,7 @@ export default function CampaignDashboard() {
   }, [token]);
 
   return (
-    <div className="p-4 flex flex-col gap-4  max-w-[400px] mx-auto h-screen overflow-y-auto">
+    <div className="p-4 flex flex-col gap-4  max-w-[400px] mx-auto overflow-y-auto">
         {paymentStatus === 'success' && (
         <div className="p-2 text-sm bg-green-100 text-green-800 rounded-md">
           Payment successful! Your wallet has been updated.

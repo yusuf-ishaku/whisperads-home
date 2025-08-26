@@ -6,22 +6,25 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 interface Campaign {
-  campaign: {
-    id: string;
-    title: string;
-    mediaUrl: string;
-    caption: string;
-    callToActionUrl: string | null;
-    budget: string;
-    status: string;
-    adGoal: string;
-    advertiserId: string;
-    startDate: string;
-    endDate: string;
-    createdAt: string;
-    updatedAt: string;
-  };
-  score: number;
+  id: number;
+  title: string;
+  image: string;
+  performance: number;
+  views: number;
+  clicks: number;
+  caption: string;
+  budget: string;
+  status: string;
+  adGoal: string;
+  startDate: string;
+  gender: string;
+  endDate: string;
+  mediaUrl?: string;
+  callToActionUrl?: string | null;
+  advertiserId?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  score?: number;
 }
 
 export default function AllCampaigns() {
@@ -60,15 +63,12 @@ export default function AllCampaigns() {
           throw new Error("Not authenticated");
         }
 
-        const response = await fetch(
-          "/api/campaigns",
-          {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        const response = await fetch("https://whisperads-api-production.up.railway.app/campaigns/my-campaigns", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         console.log("Response status:", response.status);
 
         if (!response.ok) {
@@ -77,6 +77,7 @@ export default function AllCampaigns() {
         }
 
         const data = await response.json();
+        console.log("API Response data:", data);
         setCampaigns(data);
       } catch (err) {
         setError(
@@ -111,7 +112,7 @@ export default function AllCampaigns() {
       <div className="max-w-md mx-auto h-screen flex flex-col bg-gray-100">
         <div className="bg-primary text-white px-4 py-1 flex justify-between items-center text-xs"></div>
         <div className="bg-primary text-white px-4 py-3 flex items-center">
-           <Link href={`/dashboard/${role}`}>
+          <Link href={`/dashboard/${role}`}>
             <ChevronLeft size={24} />
           </Link>
           <span className="ml-2 font-medium text-lg">All Campaigns</span>
@@ -138,25 +139,28 @@ export default function AllCampaigns() {
       {/* Campaign List */}
       <div className="flex-1 overflow-auto">
         {campaigns.length > 0 ? (
-          campaigns.map(({ campaign }) => (
+          campaigns.map((campaign) => (
             <Link
               key={campaign.id}
-              href={`/dashboard/${role}/campaigns/${campaign.id}`}
+             href={{
+    pathname: `/dashboard/${role}/campaigns/${campaign.id}`,
+    query: { campaign: JSON.stringify(campaign) }
+  }}
               className="block border-b border-gray-200 px-7 py-5 h-28 bg-white hover:bg-gray-50 transition-colors"
             >
               <div className="flex">
                 {/* Campaign Image */}
-                {campaign.mediaUrl && (
+                {campaign.mediaUrl || campaign.image ? (
                   <div className="mr-3 mt-1">
                     <div className="w-12 h-12 bg-gray-100 rounded-md overflow-hidden">
                       <img
-                        src={campaign.mediaUrl}
+                        src={campaign.mediaUrl || campaign.image}
                         alt={campaign.title}
                         className="w-full h-full object-cover"
                       />
                     </div>
                   </div>
-                )}
+                ) : null}
 
                 {/* Content */}
                 <div className="flex-1">
