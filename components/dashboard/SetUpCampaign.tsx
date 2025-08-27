@@ -23,7 +23,7 @@ type CampaignFormInputs = {
   campaignType: string;
   adGoal: string;
   adDescription: string;
-  budget: string;
+  // budget: string;
   startDate: string;
   endDate: string;
   // adFile: FileList;
@@ -48,6 +48,8 @@ function SetUpCampaign() {
     register,
     handleSubmit,
     setValue,
+    control,
+    watch,
     formState: { errors, isValid },
   } = useForm<CampaignFormInputs>({
     mode: "onChange",
@@ -60,6 +62,9 @@ function SetUpCampaign() {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showDateRange, setShowDateRange] = useState(false);
+  const { user } = useAuth();
+  const today = new Date().toISOString().split('T')[0];
+const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
 
   // const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -71,110 +76,146 @@ function SetUpCampaign() {
   //   }
   // };
 
-  const { user } = useAuth();
-  const today = new Date().toISOString().split('T')[0];
-const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
-  const onSubmit: SubmitHandler<CampaignFormInputs> = async (data) => {
-    setLoading(true);
-        const loadingToast = toast.loading('Creating campaign...');
+  // const onSubmit: SubmitHandler<CampaignFormInputs> = async (data) => {
+  //   setLoading(true);
+  //       const loadingToast = toast.loading('Creating campaign...');
 
 
-    try {
-      const user = JSON.parse(sessionStorage.getItem("user") || "null");
-      const token = sessionStorage.getItem("token");
-
-      if (!user || !token) {
-        throw new Error("Please log in first - no session found");
-      }
-
-      // const fileFormData = new FormData();
-      // fileFormData.append("file", data.adFile[0]);
-
-      // const fileUploadRes = await fetch("/api/upload/file", {
-      //   method: "POST",
-      //   headers: {
-      //     Authorization: `Bearer ${token}`,
-      //   },
-      //   body: fileFormData,
-      // });
-
-      const uploadedFileUrl =
-        "https://res.cloudinary.com/dv5v8l2lr/image/upload/v1738850383/samples/gg9yr8wgycomejpapsqv.png";
-
-      // const fileUploadResult = await fileUploadRes.json();
-      // if (!fileUploadRes.ok) {
-      //   throw new Error(fileUploadResult.message || "Failed to upload file");
-      // }
-
-      // const uploadedFileUrl = fileUploadResult?.data;
-      // if (!uploadedFileUrl) {
-      //   throw new Error("File upload failed: No URL returned");
-      // }
-
-      const campaignPayload = {
-        title: data.adName,
-        campaignType: data.campaignType,
-        adGoal: data.adGoal,
-        caption: data.adDescription,
-        mediaUrl: uploadedFileUrl,
-        budget: data.budget || 1000,
-        startDate: new Date(data.startDate).toISOString(), 
-      endDate: new Date(data.endDate).toISOString(),
-        status: "draft",
-        advertiserId: user.advertiserId,
-        perViewAmount: data.perViewAmount ? parseFloat(data.perViewAmount) : undefined,
-      perInfluencerAmount: data.perInfluencerAmount ? parseFloat(data.perInfluencerAmount) : undefined,
-      influencerCount: data.influencerCount ? parseInt(data.influencerCount) : undefined,
+  //   try {
+  //     const user = JSON.parse(sessionStorage.getItem("user") || "null");
+  //     const token = sessionStorage.getItem("token");
       
-      amountToSpend: data.campaignType === "ppv" 
-        ? (data.maxBudget ? parseFloat(data.maxBudget) : 0)
-        : (data.perInfluencerAmount && data.influencerCount 
-            ? parseFloat(data.perInfluencerAmount) * parseInt(data.influencerCount)
-            : 0),
-                  viewGoal: parseInt(data.viewGoal) || 1000
-  };
 
-      const createCampaignRes = await fetch("/api/campaign-setup", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          campaignData: campaignPayload,
-          userData: user,
-        }),
-      });
+  //     if (!user || !token) {
+  //       throw new Error("Please log in first - no session found");
+  //     }
 
-      const createCampaignResult = await createCampaignRes.json();
-      if (!createCampaignRes.ok) {
-        throw new Error(
-          createCampaignResult.message || "Failed to create campaign"
-        );
-      }
+  //     // const fileFormData = new FormData();
+  //     // fileFormData.append("file", data.adFile[0]);
 
-       toast.dismiss(loadingToast);
-      toast.success('Campaign created successfully!');
-      setShowSuccessModal(true);
+  //     // const fileUploadRes = await fetch("/api/upload/file", {
+  //     //   method: "POST",
+  //     //   headers: {
+  //     //     Authorization: `Bearer ${token}`,
+  //     //   },
+  //     //   body: fileFormData,
+  //     // });
+
+  //     const uploadedFileUrl =
+  //       "https://res.cloudinary.com/dv5v8l2lr/image/upload/v1738850383/samples/gg9yr8wgycomejpapsqv.png";
+
+  //     // const fileUploadResult = await fileUploadRes.json();
+  //     // if (!fileUploadRes.ok) {
+  //     //   throw new Error(fileUploadResult.message || "Failed to upload file");
+  //     // }
+
+  //     // const uploadedFileUrl = fileUploadResult?.data;
+  //     // if (!uploadedFileUrl) {
+  //     //   throw new Error("File upload failed: No URL returned");
+  //     // }
+
+      
+  //   let amountToSpend = 0;
+  //   let budget = 0;
+    
+  //   if (data.campaignType === "ppv") {
+  //     amountToSpend = data.maxBudget ? parseFloat(data.maxBudget) : 0;
+  //     budget = amountToSpend;
+  //   } else if (data.campaignType === "ppi") {
+  //     amountToSpend = data.perInfluencerAmount && data.influencerCount 
+  //       ? parseFloat(data.perInfluencerAmount) * parseInt(data.influencerCount)
+  //       : 0;
+  //     // For PPI, you might want to handle budget differently
+  //     // For now, set budget equal to amountToSpend
+  //     budget = amountToSpend;
+  //   }
+
+  //   // Validate that amountToSpend is greater than 0
+  //   if (amountToSpend <= 0) {
+  //     throw new Error("Amount to spend must be greater than 0");
+  //   }
+
+  //     const campaignPayload = {
+  //       title: data.adName,
+  //       campaignType: data.campaignType,
+  //       adGoal: data.adGoal,
+  //       caption: data.adDescription,
+  //       mediaUrl: uploadedFileUrl,
+  //       budget: budget,
+  //       startDate: new Date(data.startDate).toISOString(), 
+  //     endDate: new Date(data.endDate).toISOString(),
+  //       status: "draft",
+  //       advertiserId: user.advertiserId,
+  //       perViewAmount: data.perViewAmount ? parseFloat(data.perViewAmount) : undefined,
+  //     perInfluencerAmount: data.perInfluencerAmount ? parseFloat(data.perInfluencerAmount) : undefined,
+  //     influencerCount: data.influencerCount ? parseInt(data.influencerCount) : undefined,
+      
+  //     amountToSpend: data.campaignType === "ppv" 
+  //       ? (data.maxBudget ? parseFloat(data.maxBudget) : 0)
+  //       : (data.perInfluencerAmount && data.influencerCount 
+  //           ? parseFloat(data.perInfluencerAmount) * parseInt(data.influencerCount)
+  //           : 0),
+  //                 viewGoal: parseInt(data.viewGoal) || 1000
+  // };
+
+  //     const createCampaignRes = await fetch("/api/campaign-setup", {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //         Authorization: `Bearer ${token}`,
+  //       },
+  //       body: JSON.stringify({
+  //         campaignData: campaignPayload,
+  //         userData: user,
+  //       }),
+  //     });
+
+  //     const createCampaignResult = await createCampaignRes.json();
+  //     if (!createCampaignRes.ok) {
+  //       throw new Error(
+  //         createCampaignResult.message || "Failed to create campaign"
+  //       );
+  //     }
+
+  //      toast.dismiss(loadingToast);
+  //     toast.success('Campaign created successfully!');
+  //     setShowSuccessModal(true);
+  //   } catch (error) {
+  //     console.error("Error:", error);
+  //      toast.dismiss(loadingToast);
+       
+  //     if (error instanceof Error) {
+  //       if (error.message.includes("token")) {
+  //         toast.error('Session expired. Please log in again.');
+  //         sessionStorage.removeItem("user");
+  //         sessionStorage.removeItem("token");
+  //         setTimeout(() => {
+  //           router.push("/login");
+  //         }, 2000);
+  //       } else {
+  //         toast.error(error.message || 'Failed to create campaign');
+  //       }
+  //     } else {
+  //       toast.error('An unexpected error occurred');
+  //     }
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+
+    const onSubmit: SubmitHandler<CampaignFormInputs> = async (data) => {
+    setLoading(true);
+    
+    try {
+      sessionStorage.setItem('campaignFormData', JSON.stringify(data));
+      
+      router.push('/dashboard/advertiser/target-audience');
+
     } catch (error) {
       console.error("Error:", error);
-       toast.dismiss(loadingToast);
-       
-      if (error instanceof Error) {
-        if (error.message.includes("token")) {
-          toast.error('Session expired. Please log in again.');
-          sessionStorage.removeItem("user");
-          sessionStorage.removeItem("token");
-          setTimeout(() => {
-            router.push("/login");
-          }, 2000);
-        } else {
-          toast.error(error.message || 'Failed to create campaign');
-        }
-      } else {
-        toast.error('An unexpected error occurred');
-      }
+      toast.error('Failed to proceed to next step');
     } finally {
       setLoading(false);
     }
@@ -192,7 +233,6 @@ const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split(
 
   return (
     <>
-      {showSuccessModal && <CreateCampaignSuccessModal />}
 
       <main className="min-h-screen relative overflow-hidden ">
         <header className="bg-primary p-3 flex items-center h-[116px]">
@@ -249,7 +289,9 @@ const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split(
                   <PricingModelSelect
                     register={register}
                     setValue={setValue}
+                    control={control}
                     error={errors.campaignType}
+                    watch={watch}
                   />
                 </div>
 
@@ -499,7 +541,7 @@ const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split(
                 </div> */}
               </div>
 
-              {/* Continue Button */}
+             {/* Continue Button */}
               <div className="py-5">
                 <Button
                   type="submit"
@@ -514,7 +556,7 @@ const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split(
                   {loading ? (
                     <div className="flex justify-center items-center space-x-2">
                       <div className="w-4 h-4 border-t-2 border-b-2 border-white rounded-full animate-spin" />
-                      <span>Submitting...</span>
+                      <span>Loading...</span>
                     </div>
                   ) : (
                     "Continue"

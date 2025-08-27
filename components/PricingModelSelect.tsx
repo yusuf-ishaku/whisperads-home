@@ -10,11 +10,15 @@ import {
   FieldError,
   UseFormRegister,
   UseFormSetValue,
+  Control,
+  Controller
 } from "react-hook-form";
 
 interface PricingModelSelectProps {
   register: UseFormRegister<any>;
   setValue: UseFormSetValue<any>;
+  control: Control<any>; 
+  watch: any;
   error?: FieldError;
 }
 
@@ -22,20 +26,14 @@ export const PricingModelSelect = ({
   register,
   setValue,
   error,
+  control,
+  watch,
 }: PricingModelSelectProps) => {
   const [selectedModel, setSelectedModel] = useState<string | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+    const [calculatedTotal, setCalculatedTotal] = useState<number>(0);
 
-  // pay-per-view
-  const [ppv, setPpv] = useState<string>("");
-  const [maxBudget, setMaxBudget] = useState<string>("");
-  const [ppcEnabled, setPpcEnabled] = useState<boolean>(false);
-  const [ppcAmount, setPpcAmount] = useState<string>("");
 
-  // pay-per-influencer
-  const [influencerCount, setInfluencerCount] = useState<string>("");
-  const [paymentPerInfluencer, setPaymentPerInfluencer] = useState<string>("");
-  const [totalAmount, setTotalAmount] = useState<string>("");
 
   const boxRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
@@ -54,21 +52,17 @@ const selectModel = (model: string) => {
   setDropdownOpen(false);
 };
 
-  const changeModel = () => {
+ const changeModel = () => {
     setSelectedModel(null);
     setValue("campaignType", "", { shouldValidate: true });
-    setPpv(""); setMaxBudget(""); setPpcEnabled(false); setPpcAmount("");
-    setInfluencerCount(""); setPaymentPerInfluencer(""); setTotalAmount("");
   };
 
-  const calcTotal = (countRaw: string, payRaw: string) => {
-    const c = parseInt(countRaw || "0", 10);
-    const p = parseFloat(payRaw || "0");
-    if (Number.isFinite(c) && Number.isFinite(p)) {
-      setTotalAmount((c * p).toFixed(2));
-    } else {
-      setTotalAmount("");
-    }
+   const calculateTotal = () => {
+    const influencerCount = Number(watch("influencerCount") || 0);
+    const perInfluencerAmount = Number(watch("perInfluencerAmount") || 0);
+    const total = influencerCount * perInfluencerAmount;
+    setCalculatedTotal(total);
+    setValue("amountToSpend", total, { shouldValidate: true }); 
   };
 
   const CurrencyInput = ({
@@ -76,11 +70,13 @@ const selectModel = (model: string) => {
     onChange,
     placeholder = "1000",
     readOnly = false,
+    name,
   }: {
     value: string;
     onChange?: (v: string) => void;
     placeholder?: string;
     readOnly?: boolean;
+    name?: string;
   }) => (
     <div className="relative">
       <div className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 flex items-center gap-2">
@@ -95,105 +91,43 @@ const selectModel = (model: string) => {
         className={`w-full pl-16 pr-3 py-3 border border-gray-300 rounded-[0.5rem] focus:outline-none focus:ring-2 focus:ring-green-500 bg-white placeholder:text-gray-400`}
         value={value}
         onChange={(e) => onChange?.(e.target.value)}
+        name={name}
       />
     </div>
   );
 
-  const Toggle = ({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) => (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={checked}
-      onClick={() => onChange(!checked)}
-      className={`relative inline-flex h-4 w-9 items-center rounded-full transition-colors ${
-        checked ? "bg-primary" : "bg-gray-300"
-      }`}
-    >
-      <span
-        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-          checked ? "translate-x-5" : "translate-x-1"
-        }`}
-      />
-    </button>
-  );
-
-  // pay-per-view form
-  // const PayPerViewForm = () => (
-  //   <div className="mt-1 space-y-5 ">
-
-  //     <div>
-  //       <label className="mb-1 block text-xs font-medium text-black">Pay per view</label>
-  //       <CurrencyInput
-  //         value={ppv}
-  //         onChange={(v) => {
-  //           setPpv(v);
-  //           setValue("payPerViewAmount", v);
-  //         }}
-  //       />
-  //       <p className="mt-1 text-xs text-gray-500">
-  //         Pay based on the number of views the post get.
-  //       </p>
-  //     </div>
-
-  //     <div>
-  //       <label className="mb-1 block text-xs font-medium text-black">Maximum ad budget</label>
-  //       <CurrencyInput
-  //         value={maxBudget}
-  //         onChange={(v) => {
-  //           setMaxBudget(v);
-  //           setValue("maxBudget", v);
-  //         }}
-  //       />
-  //       <p className="mt-1 text-xs text-gray-500">
-  //         Ads will stop when this amount runs out.
-  //       </p>
-  //     </div>
-
-  //     <div className="pt-2">
-  //       <div className="flex items-center justify-between">
-  //         <div>
-  //           <label className="text-xs font-medium text-black">Pay per Click (Optional)</label>
-  //           <p className="text-xs text-gray-500">Extra charge per link click</p>
-  //         </div>
-  //         <Toggle checked={ppcEnabled} onChange={setPpcEnabled} />
-  //       </div>
-
-  //       {ppcEnabled && (
-  //         <div className="mt-3">
-  //           <CurrencyInput
-  //             value={ppcAmount}
-  //             onChange={(v) => {
-  //               setPpcAmount(v);
-  //               setValue("payPerClickAmount", v);
-  //             }}
-  //             placeholder="0.00"
-  //           />
-  //         </div>
-  //       )}
-  //     </div>
-
-  //     <button
-  //       type="button"
-  //       onClick={changeModel}
-  //       className="mt-1 inline-flex items-center gap-1 text-sm font-medium text-gray-600 "
-  //     >
-  //       <ChevronDown className="h-4 w-4 " />
-  //       Change price model
-  //     </button>
-  //   </div>
+  // const Toggle = ({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) => (
+  //   <button
+  //     type="button"
+  //     role="switch"
+  //     aria-checked={checked}
+  //     onClick={() => onChange(!checked)}
+  //     className={`relative inline-flex h-4 w-9 items-center rounded-full transition-colors ${
+  //       checked ? "bg-primary" : "bg-gray-300"
+  //     }`}
+  //   >
+  //     <span
+  //       className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+  //         checked ? "translate-x-5" : "translate-x-1"
+  //       }`}
+  //     />
+  //   </button>
   // );
 
   const PayPerViewForm = () => (
   <div className="mt-1 space-y-5 ">
     <div>
       <label className="mb-1 block text-xs font-medium text-black">Pay per view</label>
-      <CurrencyInput
-        value={ppv}
-        onChange={(v) => {
-          setPpv(v);
-          setValue("perViewAmount", v); // Changed from payPerViewAmount
-        }}
-      />
+      <Controller
+          name="perViewAmount"
+          control={control}
+          render={({ field }) => (
+             <CurrencyInput
+      value={field.value || ""}
+      onChange={(v) => field.onChange(v)} 
+    />
+          )}
+        />
       <p className="mt-1 text-xs text-gray-500">
         Pay based on the number of views the post get.
       </p>
@@ -201,14 +135,16 @@ const selectModel = (model: string) => {
 
     <div>
       <label className="mb-1 block text-xs font-medium text-black">Maximum ad budget</label>
-      <CurrencyInput
-        value={maxBudget}
-        onChange={(v) => {
-          setMaxBudget(v);
-          setValue("maxBudget", v);
-          setValue("amountToSpend", v);
-        }}
-      />
+     <Controller
+          name="maxBudget"
+          control={control}
+          render={({ field }) => (
+            <CurrencyInput
+      value={field.value || ""}
+      onChange={(v) => field.onChange(v)} 
+    />
+          )}
+        />
       <p className="mt-1 text-xs text-gray-500">
         Ads will stop when this amount runs out.
       </p>
@@ -226,118 +162,110 @@ const selectModel = (model: string) => {
   </div>
 );
 
-  // pay-per-influencer form
-  // const PayPerInfluencerForm = () => (
-  //   <div className="mt-2 space-y-5 rounded-[0.5rem]">
-
-  //     <div>
-  //       <label className="mb-1 block text-sm font-medium text-black">
-  //         Number of Influencers
-  //       </label>
-  //       <input
-  //         type="number"
-  //         placeholder="0"
-  //         className="w-full rounded-[0.5rem] border border-gray-300 p-3 focus:outline-none focus:ring-2 focus:ring-green-500"
-  //         value={influencerCount}
-  //         onChange={(e) => {
-  //           const v = e.target.value;
-  //           setInfluencerCount(v);
-  //           setValue("influencerCount", v);
-  //           calcTotal(v, paymentPerInfluencer);
-  //         }}
-  //       />
-  //     </div>
-
-  //     <div>
-  //       <label className="mb-1 block text-sm font-medium text-black">
-  //         Payment for each influencer
-  //       </label>
-  //       <CurrencyInput
-  //         value={paymentPerInfluencer}
-  //         onChange={(v) => {
-  //           setPaymentPerInfluencer(v);
-  //           setValue("paymentPerInfluencer", v);
-  //           calcTotal(influencerCount, v);
-  //         }}
-  //         placeholder="0.00"
-  //       />
-  //     </div>
-
-  //     <div>
-  //       <label className="mb-1 block text-sm font-medium text-black">Total amount</label>
-  //       <CurrencyInput value={totalAmount} readOnly />
-  //     </div>
-
-  //     <button
-  //       type="button"
-  //       onClick={changeModel}
-  //       className="inline-flex items-center gap-1 text-sm font-medium text-gray-600"
-  //     >
-  //       <ChevronDown className="h-4 w-4" />
-  //       Change price model
-  //     </button>
-  //   </div>
-  // );
-
   const PayPerInfluencerForm = () => (
-  <div className="mt-2 space-y-5 rounded-[0.5rem]">
-    <div>
-      <label className="mb-1 block text-sm font-medium text-black">
-        Number of Influencers
-      </label>
-      <input
-        type="number"
-        placeholder="0"
-        className="w-full rounded-[0.5rem] border border-gray-300 p-3 focus:outline-none focus:ring-2 focus:ring-green-500"
-        value={influencerCount}
-        onChange={(e) => {
-          const v = e.target.value;
-          setInfluencerCount(v);
-          setValue("influencerCount", v);
-          calcTotal(v, paymentPerInfluencer);
-          // Also update amountToSpend
-          if (paymentPerInfluencer) {
-            const total = parseFloat(v || "0") * parseFloat(paymentPerInfluencer || "0");
-            setValue("amountToSpend", total.toString());
+    <div className="mt-2 space-y-5 rounded-[0.5rem]">
+      <div>
+        <label className="mb-1 block text-sm font-medium text-black">
+          Number of Influencers
+        </label>
+        <Controller
+          name="influencerCount"
+          control={control}
+          render={({ field }) => (
+            <input
+              type="number"
+              placeholder="0"
+              className="w-full rounded-[0.5rem] border border-gray-300 p-3 focus:outline-none focus:ring-2 focus:ring-green-500"
+              {...field}
+            />
+          )}
+        />
+      </div>
+
+      <div>
+        <label className="mb-1 block text-sm font-medium text-black">
+          Payment for each influencer
+        </label>
+        <Controller
+          name="perInfluencerAmount"
+          control={control}
+          render={({ field }) => (
+           <CurrencyInput
+              value={field.value || ""}
+              onChange={(v) => field.onChange(v)}
+              name={field.name}
+            />
+          )}
+        />
+      </div>
+
+      
+      {/* Calculate Button */}
+      <div>
+        <Button
+          type="button"
+          onClick={calculateTotal}
+          className="w-full bg-green-600 hover:bg-green-700 text-white"
+        >
+          Calculate Total Amount
+        </Button>
+      </div>
+
+      {/* Display Calculated Total */}
+      <div>
+        <label className="mb-1 block text-sm font-medium text-black">
+          Total amount
+        </label>
+        <CurrencyInput 
+          value={calculatedTotal ? String(calculatedTotal) : ""} 
+          readOnly 
+        />
+        <input
+          type="hidden"
+          {...register("amountToSpend")}
+          value={calculatedTotal}
+        />
+      </div>
+
+      {/* <div>
+        <label className="mb-1 block text-sm font-medium text-black">
+          Total amount
+        </label>
+        <Controller
+          name="amountToSpend"
+          control={control}
+          render={({ field }) => {
+        // Get values from form state
+        const influencerCount = Number(control._formValues?.influencerCount || 0);
+        const perInfluencerAmount = Number(control._formValues?.perInfluencerAmount || 0);
+        const total = influencerCount * perInfluencerAmount;
+
+        // Update the field value if it differs
+        useEffect(() => {
+          if (field.value !== total) {
+            field.onChange(total);
           }
-        }}
-      />
-    </div>
+          // eslint-disable-next-line react-hooks/exhaustive-deps
+        }, [influencerCount, perInfluencerAmount]);
 
-    <div>
-      <label className="mb-1 block text-sm font-medium text-black">
-        Payment for each influencer
-      </label>
-      <CurrencyInput
-        value={paymentPerInfluencer}
-        onChange={(v) => {
-          setPaymentPerInfluencer(v);
-          setValue("perInfluencerAmount", v); 
-          calcTotal(influencerCount, v);
-          if (influencerCount) {
-            const total = parseFloat(v || "0") * parseFloat(influencerCount || "0");
-            setValue("amountToSpend", total.toString());
-          }
-        }}
-        placeholder="0.00"
-      />
-    </div>
+        return (
+          <CurrencyInput value={total ? String(total) : ""} readOnly />
+        );
+          }}
+        />
+      </div> */}
 
-    <div>
-      <label className="mb-1 block text-sm font-medium text-black">Total amount</label>
-      <CurrencyInput value={totalAmount} readOnly />
+      <button
+        type="button"
+        onClick={changeModel}
+        className="inline-flex items-center gap-1 text-sm font-medium text-gray-600"
+      >
+        <ChevronDown className="h-4 w-4" />
+        Change price model
+      </button>
     </div>
+  );
 
-    <button
-      type="button"
-      onClick={changeModel}
-      className="inline-flex items-center gap-1 text-sm font-medium text-gray-600"
-    >
-      <ChevronDown className="h-4 w-4" />
-      Change price model
-    </button>
-  </div>
-);
 
   return (
     <div className="relative">

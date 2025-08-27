@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function ActionButtons() {
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 pb-12">
       <button className="w-full py-3 border border-primary text-primary rounded-[0.5rem] font-medium">
         <Link href={"/dashboard/advertiser/campaigns"}>View All Campaigns</Link>
       </button>
