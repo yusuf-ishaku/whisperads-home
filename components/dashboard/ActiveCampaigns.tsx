@@ -12,6 +12,7 @@ import {
 import UploadProofPopup from "./UploadProofPopup";
 import { Button } from "../ui/button";
 import ParticipateSuccessModal from "../ParticipateSuccessModal";
+import { authFetch } from "@/utils/api";
 
 interface Campaign {
   id: number;
@@ -51,13 +52,13 @@ export default function ActiveCampaigns() {
   useEffect(() => {
     const fetchActiveCampaigns = async () => {
       try {
-        const token = sessionStorage.getItem("token");
-          console.log("Token:", token);
-        if (!token) throw new Error("Not authenticated");
+       const token =  localStorage.getItem("accessToken") || localStorage.getItem("token");
+console.log("Token:", token);
+if (!token) throw new Error("Not authenticated");
 
-        const response = await fetch("https://whisperads-api-production.up.railway.app/campaigns/my-campaigns", {
+        const response = await authFetch("https://whisperads-api-production.up.railway.app/campaigns/my-campaigns", {
           method: "GET",
-          headers: { "Authorization": `Bearer ${token}` }
+          headers: { "Authorization": `Bearer ${token}`,     "Content-Type": "application/json",}
         });
 
         if (!response.ok) {

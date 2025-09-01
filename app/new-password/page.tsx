@@ -41,9 +41,9 @@ function NewPassword({ params }: { params: { role: string } }) {
     defaultValues: {
       email: "",
       password: "",
-      whatsappNumber: "",
-      accountNumber: "",
-      bank: "",
+      // whatsappNumber: "",
+      // accountNumber: "",
+      // bank: "",
     },
   });
   async function onSubmit(data: SignUpValues) {
@@ -63,9 +63,17 @@ function NewPassword({ params }: { params: { role: string } }) {
 
   return (
     <main className="text-5xl text-black font-bold h-screen">
-      <header className="bg-primary p-3 flex items-center h-[116px]">
-        <h1 className="text-white text-lg font-medium">Set a New Password</h1>
-      </header>
+       <header className="bg-primary p-3 flex items-center h-[116px]">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-white"
+                onClick={() => router.back()}
+              >
+                <ChevronLeft className="h-6 w-6" />
+              </Button>
+              <h1 className="text-white text-lg font-medium">Set A New Password</h1>
+            </header>
       <div className="flex flex-col mt-5">
         <div className="mx-auto">
           <div className="bg-white w-[325px] h-[350px] ">

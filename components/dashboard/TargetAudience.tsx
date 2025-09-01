@@ -21,6 +21,7 @@ type TargetingFormInputs = {
   gender: string;
   location: string;
   language: string;
+  tags: string[];
 };
 
 type CampaignFormData = {
@@ -38,6 +39,41 @@ type CampaignFormData = {
   viewGoal: string;
 };
 
+const MOCK_TAGS = [
+  "Technology",
+  "Fashion",
+  "Sports",
+  "Travel",
+  "Food",
+  "Music",
+  "Art",
+  "Photography",
+  "Fitness",
+  "Gaming",
+  "Books",
+  "Movies",
+  "Nature",
+  "DIY",
+  "Beauty",
+  "Health",
+  "Business",
+  "Education",
+  "Parenting",
+  "Pets"
+];
+
+const LOCATIONS = [
+  "Lagos", "Abuja", "Port Harcourt", "Kano", "Ibadan", 
+  "Enugu", "Benin City", "Kaduna", "Warri", "Abeokuta",
+  "Onitsha", "Jos", "Calabar", "Uyo", "Owerri"
+];
+
+const LANGUAGES = [
+  "English", "Yoruba", "Igbo", "Hausa", "Pidgin",
+  "French", "Spanish", "Arabic"
+];
+
+
 function TargetAudience() {
   const router = useRouter();
    const [loading, setLoading] = useState(false);
@@ -46,25 +82,47 @@ function TargetAudience() {
   const [showPaymentConfirmModal, setShowPaymentConfirmModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [calculatedAmount, setCalculatedAmount] = useState(0);
+    const [selectedTags, setSelectedTags] = useState<string[]>([]);
+
 
   const {
     register,
     handleSubmit,
     watch,
+    setValue,
     formState: { errors, isValid },
   } = useForm<TargetingFormInputs>({
     mode: "onChange",
+     defaultValues: {
+      tags: []
+    }
   });
 
   useEffect(() => {
-    const storedData = sessionStorage.getItem('campaignFormData');
+    const storedData = localStorage.getItem('campaignFormData');
     if (storedData) {
       setCampaignData(JSON.parse(storedData));
     } else {
       toast.error('No campaign data found. Please start over.');
-      router.push('/campaign/setup');
+      router.push('/ad-creation');
     }
   }, [router]);
+
+    const handleTagSelect = (tag: string) => {
+    setSelectedTags(prev => {
+      let newTags;
+      if (prev.includes(tag)) {
+        // Remove tag if already selected
+        newTags = prev.filter(t => t !== tag);
+      } else {
+        // Add tag if not selected
+        newTags = [...prev, tag];
+      }
+      // Update form value
+      setValue("tags", newTags, { shouldValidate: true });
+      return newTags;
+    });
+  }
 
 
   const calculateAdDuration = () => {
@@ -116,10 +174,10 @@ function TargetAudience() {
     const loadingToast = toast.loading('Processing payment and creating campaign...');
 
     try {
-      const token = sessionStorage.getItem("token");
-      const user = JSON.parse(sessionStorage.getItem("user") || "null");
+      const accessToken = localStorage.getItem("accessToken");
+      const user = JSON.parse(localStorage.getItem("user") || "null");
 
-      if (!user || !token) {
+      if (!user || !accessToken) {
         throw new Error("Please log in first - no session found");
       }
 
@@ -161,7 +219,8 @@ function TargetAudience() {
           ageRange: targetingData.ageRange,
           location: targetingData.location,
           preferredGender: targetingData.gender,
-          language: targetingData.language
+          language: targetingData.language,
+          tags: targetingData.tags 
         }
       };
 
@@ -169,7 +228,7 @@ function TargetAudience() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${accessToken}`,
         },
         body: JSON.stringify({
           campaignData: campaignPayload,
@@ -194,7 +253,7 @@ function TargetAudience() {
       if (error instanceof Error) {
         if (error.message.includes("token") || error.message.includes("401")) {
           toast.error('Session expired. Please log in again.');
-          sessionStorage.clear();
+          localStorage.clear();
           setTimeout(() => router.push("/login"), 2000);
         } else {
           toast.error(error.message || 'Failed to create campaign');
@@ -209,7 +268,7 @@ function TargetAudience() {
 
   const handleSuccessModalClose = () => {
     setShowSuccessModal(false);
-    sessionStorage.removeItem('campaignFormData');
+    localStorage.removeItem('campaignFormData');
     router.push('/dashboard');
   };
 
@@ -318,41 +377,69 @@ function TargetAudience() {
               </div>
 
             <div>
-                <label className="block text-sm font-medium text-black py-1">
-                  Locations
-                </label>
-                <div className="relative">
-                  <Search className="absolute left-3 top-4 w-4 h-4 text-gray-500" />
-                  <input
-                    type="text"
-                    {...register("location", { required: "Location is required" })}
-                    placeholder="Search locations"
-                    className="block w-full border border-gray-300 rounded-[0.5rem] p-3 pl-10 pr-10 focus:outline-none focus:ring-2 focus:ring-green-500 text-sm text-gray-500"
-                  />
-                  <MapPin className="absolute right-3 top-4 w-4 h-4 text-gray-500" />
-                </div>
-                {errors.location && (
-                  <p className="text-red-500 text-sm mt-1">{errors.location.message}</p>
-                )}
-                <small className="text-gray-400 text-[10px]">Reach people who live in, or are currently located within the area you&apos;ve selected.</small>
-              </div>
+  <label className="block text-sm font-medium text-black py-1">
+    Locations
+  </label>
+  <div className="relative">
+    <select
+      {...register("location", { required: "Location is required" })}
+      className="block w-full border border-gray-300 rounded-[0.5rem] p-3 appearance-none focus:outline-none focus:ring-2 focus:ring-green-500 text-sm text-gray-500"
+    >
+      <option value="">Select location</option>
+      {LOCATIONS.map(location => (
+        <option key={location} value={location}>{location}</option>
+      ))}
+    </select>
+    <ChevronDown className="absolute top-4 right-3 w-4 h-4 text-gray-500 pointer-events-none" />
+  </div>
+  {errors.location && (
+    <p className="text-red-500 text-sm mt-1">{errors.location.message}</p>
+  )}
+</div>
+
+              <div>
+  <label className="block text-sm font-medium text-black py-1">
+    Language
+  </label>
+  <div className="relative">
+    <select
+      {...register("language", { required: "Language is required" })}
+      className="block w-full border border-gray-300 rounded-[0.5rem] p-3 appearance-none focus:outline-none focus:ring-2 focus:ring-green-500 text-sm text-gray-500"
+    >
+      <option value="">Select language</option>
+      {LANGUAGES.map(language => (
+        <option key={language} value={language}>{language}</option>
+      ))}
+    </select>
+    <ChevronDown className="absolute top-4 right-3 w-4 h-4 text-gray-500 pointer-events-none" />
+  </div>
+  {errors.language && (
+    <p className="text-red-500 text-sm mt-1">{errors.language.message}</p>
+  )}
+</div>
 
               <div>
                 <label className="block text-sm font-medium text-black py-1">
-                  Language
+                  Interests
                 </label>
-                <div className="relative">
-                  <Search className="absolute left-3 top-4 w-4 h-4 text-gray-500" />
-                  <input
-                    type="text"
-                    {...register("language", { required: "Language is required" })}
-                    placeholder="Search languages"
-                    className="block w-full border border-gray-300 rounded-[0.5rem] p-3 pl-10 focus:outline-none focus:ring-2 focus:ring-green-500 text-sm text-gray-500"
-                  />
+                <p className="text-xs text-gray-500 mb-2">Select interests to target your audience</p>
+                <div className="flex flex-wrap gap-2">
+                  {MOCK_TAGS.map(tag => (
+                    <button
+                      key={tag}
+                      type="button"
+                      onClick={() => handleTagSelect(tag)}
+                      className={`px-3 py-1 rounded-full text-sm border ${
+                        selectedTags.includes(tag) 
+                          ? "bg-primary text-white border-primary" 
+                          : "bg-white text-gray-700 border-gray-300"
+                      }`}
+                    >
+                      {tag}
+                    </button>
+                  ))}
                 </div>
-                {errors.language && (
-                  <p className="text-red-500 text-sm mt-1">{errors.language.message}</p>
-                )}
+                <input type="hidden" {...register("tags")} />
               </div>
             </div>
 
@@ -390,6 +477,7 @@ function TargetAudience() {
           gender: targetingData.gender || "Not selected",
           location: targetingData.location || "Not selected",
           language: targetingData.language || "Not selected",
+          tags: selectedTags.length > 0 ? selectedTags.join(", ") : "Not selected",
           adDuration: adDuration,
           totalAmount: totalAmount
         }}

@@ -51,7 +51,7 @@ export default function AgentActiveCampaigns() {
   useEffect(() => {
     const fetchActiveCampaigns = async () => {
       try {
-        const token = sessionStorage.getItem("token");
+        const token = localStorage.getItem("accessToken");
           console.log("Token:", token);
         if (!token) throw new Error("Not authenticated");
 
@@ -59,6 +59,14 @@ export default function AgentActiveCampaigns() {
           method: "GET",
           headers: { "Authorization": `Bearer ${token}` }
         });
+
+          if (response.status === 401) {
+          localStorage.removeItem("accessToken");
+          localStorage.removeItem("refreshToken");
+          localStorage.removeItem("user");
+          window.location.href = "/login";
+          return;
+        }
 
         if (!response.ok) {
           const errorData = await response.json();

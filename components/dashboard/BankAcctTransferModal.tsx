@@ -10,16 +10,16 @@ interface BankTransferModalProps {
 export default function BankAcctTransferModal({ onClose, amount }: BankTransferModalProps) {
 
    const handleMakeTransfer = async () => {
-    const token = sessionStorage.getItem("token");
+    const accessToken = sessionStorage.getItem("accessToken");
     const user = JSON.parse(sessionStorage.getItem("user") || "null");
 
-      if (!token || !user) return;
+      if (!accessToken || !user) return;
 
     try {
       const res = await fetch(`/api/wallet/${user.id}`, {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${accessToken}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ amount }),

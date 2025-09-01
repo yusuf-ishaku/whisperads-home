@@ -18,10 +18,10 @@ export default function Home() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState("")
 
-  // Initialize user data from session storage
+  // Initialize user data from local storage
   useEffect(() => {
-    const userData = sessionStorage.getItem("user")
-    if (userData) {
+    const userData = localStorage.getItem("user")
+    if (userData && userData !== "undefined") {
       const user = JSON.parse(userData)
       setFormData(prev => ({
         ...prev,
@@ -40,7 +40,7 @@ export default function Home() {
     setError("")
 
     try {
-      const token = sessionStorage.getItem("token")
+      const token = localStorage.getItem("accessToken")
       const userId = formData.userId
 
       if (!token) {
@@ -72,10 +72,10 @@ export default function Home() {
       }
 
       // Update user profile complete status
-      const userData = sessionStorage.getItem("user")
+      const userData = localStorage.getItem("user")
       if (userData) {
         const user = JSON.parse(userData)
-        sessionStorage.setItem("user", JSON.stringify({
+        localStorage.setItem("user", JSON.stringify({
           ...user,
           profileComplete: true
         }))
@@ -92,7 +92,7 @@ export default function Home() {
 
   const handleContinueAfterSuccess = () => {
     // Redirect to dashboard after successful profile creation
-    const userData = sessionStorage.getItem("user")
+    const userData = localStorage.getItem("user")
     if (userData) {
       const user = JSON.parse(userData)
       window.location.href = `/dashboard/${user.role}`

@@ -73,6 +73,8 @@ export async function GET(req: NextRequest) {
     }
 
     const data = await res.json();
+        console.log("External API success response:", data);
+
     return NextResponse.json({ hasProfile: true, profile: data });
 
   } catch (error: any) {

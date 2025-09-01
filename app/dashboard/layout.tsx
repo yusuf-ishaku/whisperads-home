@@ -11,8 +11,8 @@ export default function DashboardLayout({
   const router = useRouter();
 
   useEffect(() => {
-    const user = sessionStorage.getItem("user");
-    const token = sessionStorage.getItem("token");
+    const user = localStorage.getItem("user");
+    const token = localStorage.getItem("accessToken");
     
     if (!user || !token) {
       router.push("/login");

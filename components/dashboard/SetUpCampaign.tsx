@@ -52,7 +52,7 @@ function SetUpCampaign() {
     watch,
     formState: { errors, isValid },
   } = useForm<CampaignFormInputs>({
-    mode: "onChange",
+    mode: "onBlur",
     defaultValues: {
     viewGoal: "1000"
   }
@@ -62,154 +62,39 @@ function SetUpCampaign() {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showDateRange, setShowDateRange] = useState(false);
+  const [selectedModel, setSelectedModel] = useState<string | null>(null);
   const { user } = useAuth();
   const today = new Date().toISOString().split('T')[0];
 const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
-
-  // const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   const file = e.target.files?.[0];
-  //   if (file) {
-  //     setSelectedFileName(file.name);
-  //   } else {
-  //     setSelectedFileName(null);
-  //   }
-  // };
-
-
-  // const onSubmit: SubmitHandler<CampaignFormInputs> = async (data) => {
-  //   setLoading(true);
-  //       const loadingToast = toast.loading('Creating campaign...');
-
-
-  //   try {
-  //     const user = JSON.parse(sessionStorage.getItem("user") || "null");
-  //     const token = sessionStorage.getItem("token");
-      
-
-  //     if (!user || !token) {
-  //       throw new Error("Please log in first - no session found");
-  //     }
-
-  //     // const fileFormData = new FormData();
-  //     // fileFormData.append("file", data.adFile[0]);
-
-  //     // const fileUploadRes = await fetch("/api/upload/file", {
-  //     //   method: "POST",
-  //     //   headers: {
-  //     //     Authorization: `Bearer ${token}`,
-  //     //   },
-  //     //   body: fileFormData,
-  //     // });
-
-  //     const uploadedFileUrl =
-  //       "https://res.cloudinary.com/dv5v8l2lr/image/upload/v1738850383/samples/gg9yr8wgycomejpapsqv.png";
-
-  //     // const fileUploadResult = await fileUploadRes.json();
-  //     // if (!fileUploadRes.ok) {
-  //     //   throw new Error(fileUploadResult.message || "Failed to upload file");
-  //     // }
-
-  //     // const uploadedFileUrl = fileUploadResult?.data;
-  //     // if (!uploadedFileUrl) {
-  //     //   throw new Error("File upload failed: No URL returned");
-  //     // }
-
-      
-  //   let amountToSpend = 0;
-  //   let budget = 0;
+React.useEffect(() => {
+  const savedData = localStorage.getItem('campaignFormData');
+  if (savedData) {
+    const parsedData = JSON.parse(savedData);
     
-  //   if (data.campaignType === "ppv") {
-  //     amountToSpend = data.maxBudget ? parseFloat(data.maxBudget) : 0;
-  //     budget = amountToSpend;
-  //   } else if (data.campaignType === "ppi") {
-  //     amountToSpend = data.perInfluencerAmount && data.influencerCount 
-  //       ? parseFloat(data.perInfluencerAmount) * parseInt(data.influencerCount)
-  //       : 0;
-  //     // For PPI, you might want to handle budget differently
-  //     // For now, set budget equal to amountToSpend
-  //     budget = amountToSpend;
-  //   }
-
-  //   // Validate that amountToSpend is greater than 0
-  //   if (amountToSpend <= 0) {
-  //     throw new Error("Amount to spend must be greater than 0");
-  //   }
-
-  //     const campaignPayload = {
-  //       title: data.adName,
-  //       campaignType: data.campaignType,
-  //       adGoal: data.adGoal,
-  //       caption: data.adDescription,
-  //       mediaUrl: uploadedFileUrl,
-  //       budget: budget,
-  //       startDate: new Date(data.startDate).toISOString(), 
-  //     endDate: new Date(data.endDate).toISOString(),
-  //       status: "draft",
-  //       advertiserId: user.advertiserId,
-  //       perViewAmount: data.perViewAmount ? parseFloat(data.perViewAmount) : undefined,
-  //     perInfluencerAmount: data.perInfluencerAmount ? parseFloat(data.perInfluencerAmount) : undefined,
-  //     influencerCount: data.influencerCount ? parseInt(data.influencerCount) : undefined,
-      
-  //     amountToSpend: data.campaignType === "ppv" 
-  //       ? (data.maxBudget ? parseFloat(data.maxBudget) : 0)
-  //       : (data.perInfluencerAmount && data.influencerCount 
-  //           ? parseFloat(data.perInfluencerAmount) * parseInt(data.influencerCount)
-  //           : 0),
-  //                 viewGoal: parseInt(data.viewGoal) || 1000
-  // };
-
-  //     const createCampaignRes = await fetch("/api/campaign-setup", {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //         Authorization: `Bearer ${token}`,
-  //       },
-  //       body: JSON.stringify({
-  //         campaignData: campaignPayload,
-  //         userData: user,
-  //       }),
-  //     });
-
-  //     const createCampaignResult = await createCampaignRes.json();
-  //     if (!createCampaignRes.ok) {
-  //       throw new Error(
-  //         createCampaignResult.message || "Failed to create campaign"
-  //       );
-  //     }
-
-  //      toast.dismiss(loadingToast);
-  //     toast.success('Campaign created successfully!');
-  //     setShowSuccessModal(true);
-  //   } catch (error) {
-  //     console.error("Error:", error);
-  //      toast.dismiss(loadingToast);
-       
-  //     if (error instanceof Error) {
-  //       if (error.message.includes("token")) {
-  //         toast.error('Session expired. Please log in again.');
-  //         sessionStorage.removeItem("user");
-  //         sessionStorage.removeItem("token");
-  //         setTimeout(() => {
-  //           router.push("/login");
-  //         }, 2000);
-  //       } else {
-  //         toast.error(error.message || 'Failed to create campaign');
-  //       }
-  //     } else {
-  //       toast.error('An unexpected error occurred');
-  //     }
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
+    // Set all values from saved data first
+    Object.keys(parsedData).forEach(key => {
+      if (parsedData[key] !== undefined && parsedData[key] !== null) {
+        setValue(key as keyof CampaignFormInputs, parsedData[key], { shouldValidate: false });
+      }
+    });
+    
+    // Then force campaignType to ppv
+    setTimeout(() => {
+      setValue("campaignType", "ppv", { shouldValidate: true });
+    }, 100);
+  } else {
+    // If no saved data, still set campaignType to ppv
+    setValue("campaignType", "ppv", { shouldValidate: true });
+  }
+}, [setValue]);
 
 
     const onSubmit: SubmitHandler<CampaignFormInputs> = async (data) => {
     setLoading(true);
     
     try {
-      sessionStorage.setItem('campaignFormData', JSON.stringify(data));
+      localStorage.setItem('campaignFormData', JSON.stringify(data));
       
       router.push('/dashboard/advertiser/target-audience');
 
@@ -221,6 +106,9 @@ const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split(
     }
   };
 
+  
+  
+
   React.useEffect(() => {
     if (Object.keys(errors).length > 0) {
       const firstError = Object.values(errors)[0];
@@ -229,6 +117,14 @@ const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split(
       }
     }
   }, [errors]);
+
+  React.useEffect(() => {
+  const budget = Number(watch("maxBudget"));
+  if (budget > 0) {
+    const estimatedReach = Math.floor(budget * 100); 
+    setValue("viewGoal", estimatedReach.toString(), { shouldValidate: true });
+  }
+}, [watch("maxBudget"), setValue]);
 
 
   return (
@@ -322,17 +218,17 @@ const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split(
 
                 <div>
   <label className="block text-sm font-medium text-black py-1">
-    View Goal
+    Estimated Reach
   </label>
   <div className="relative">
     <input
       type="number"
       {...register("viewGoal", {
-        required: "View Goal is required",
+        required: "Estimated reach is required",
         valueAsNumber: true,
-        validate: value => Number(value) > 0 || "View Goal must be greater than 0"
+        validate: value => Number(value) > 0 || "Estimated Reach must be greater than 0"
       })}
-      placeholder="Enter your view goal"
+      placeholder="Enter your estimated reach"
       className="block w-full border border-gray-300 rounded-[0.5rem] p-3 appearance-none focus:outline-none focus:ring-2 focus:ring-green-500 text-sm text-gray-400"
     />
     {errors.viewGoal && (
@@ -341,7 +237,12 @@ const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split(
       </p>
     )}
   </div>
+   <p className="text-xs text-gray-500 mt-1">
+    Estimated based on your budget: ~{watch("maxBudget") ? Math.floor(Number(watch("maxBudget")) * 100) : 0} people
+  </p>
 </div>
+
+
 
                 {/* <div>
   <label className="block text-sm font-medium text-black py-1">

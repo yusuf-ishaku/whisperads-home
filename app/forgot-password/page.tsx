@@ -29,10 +29,9 @@ import {
 } from "@/components/ui/form";
 import { signUpSchema, type SignUpValues } from "@/lib/validations/auth";
 import Google from "@/components/icons/Google";
-import ResetCodeForm from '@/components/ResetCodeForm';
 
 
-function CheckEmail({ params }: { params: { role: string } }) {
+function ForgotPassword({ params }: { params: { role: string } }) {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -73,8 +72,9 @@ function CheckEmail({ params }: { params: { role: string } }) {
         >
           <ChevronLeft className="h-6 w-6" />
         </Button>
-        <h1 className="text-white text-lg font-medium">Check Your Email</h1>
+        <h1 className="text-white text-lg font-medium">Forgot Password</h1>
       </header>
+      
       <div className="flex flex-col mt-5">
         <div className="mx-auto">
           <div className="bg-white w-[325px] h-[250px] ">
@@ -89,26 +89,32 @@ function CheckEmail({ params }: { params: { role: string } }) {
                   render={({ field }) => (
                     <FormItem>
                       <p className="text-sm font-medium text-gray-500">
-                      We sent a reset link to Adaku@gmail.com. Enter  the 5 digit code mentioned in the email.
+                        Please enter your email to reset password
                       </p>
                       <FormLabel className="font-medium text-sm">
                         Email
                       </FormLabel>
-                      <ResetCodeForm/>
+                      <FormControl>
+                        <Input
+                          placeholder="Adaku@gmail.com"
+                          {...field}
+                          className="placeholder:text-sm placeholder-gray-400 placeholder:font-light"
+                        />
+                      </FormControl>
                       <FormMessage className="text-red-500 text-xs" />
                     </FormItem>
                   )}
                 />
 
                 <div className="py-3">
-                                  <Link href="/new-password"
-                                    type="submit"
-                                    className="w-full text-white bg-primary p-2 text-sm disabled:bg-[#009444] rounded font-normal"
-                                    // disabled={isLoading}
-                                  >
-                                    {isLoading ? "Resetting..." : "Reset Password"}
-                                  </Link>
-                                </div>
+                  <Link href="/check-email"
+                    type="submit"
+                    className="w-full text-white bg-primary p-2 text-sm disabled:bg-[#009444] rounded font-normal"
+                    // disabled={isLoading}
+                  >
+                    {isLoading ? "Resetting..." : "Reset Password"}
+                  </Link>
+                </div>
 
                 <div className="text-center space-y-2">
                   <p className="text-sm font-normal">
@@ -130,4 +136,4 @@ function CheckEmail({ params }: { params: { role: string } }) {
   );
 }
 
-export default CheckEmail;
+export default ForgotPassword;

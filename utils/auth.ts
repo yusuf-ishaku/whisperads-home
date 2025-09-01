@@ -60,3 +60,4 @@ export const sendPasswordResetEmail = async (email: string, OTP: string, firstna
 export const generateRandomToken = (): string => {
     return Math.floor(100000 + Math.random() * 900000).toString();
 };
+

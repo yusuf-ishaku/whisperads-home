@@ -24,7 +24,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Initialize from sessionStorage on mount
   useEffect(() => {
     const storedUser = sessionStorage.getItem('user');
-    if (storedUser) setUser(JSON.parse(storedUser));
+    if (storedUser && storedUser !== "undefined") setUser(JSON.parse(storedUser));
   }, []);
 
   const login = (userData: User, token: string) => {

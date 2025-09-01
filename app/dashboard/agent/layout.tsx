@@ -1,3 +1,4 @@
+// app/dashboard/agent/layout.tsx (Simplest version)
 "use client";
 
 import { useEffect, useState } from "react";
@@ -9,53 +10,46 @@ export default function AgentLayout({
 }: { 
   children: React.ReactNode;
 }) {
-  const router = useRouter();
-    const pathname = usePathname();
-  const [authStatus, setAuthStatus] = useState<"loading" | "authorized" | "unauthorized">("loading");
+  const [isLoading, setIsLoading] = useState(true);
+  const [isAuthorized, setIsAuthorized] = useState(false);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
-
-     const checkAuth = () => {
-    const token = sessionStorage.getItem("token");
-    const userString = sessionStorage.getItem("user");
-
-     if (pathname?.includes("/create-profile")) {
-        setAuthStatus("authorized");
-        return;
+    const checkAuth = () => {
+      try {
+        const token = localStorage.getItem("accessToken");
+        const userString = localStorage.getItem("user");
+        
+        if (token && userString && userString !== "undefined") {
+          const user = JSON.parse(userString);
+          const userRole = (user?.role || '').toString().toLowerCase();
+          
+          if (userRole === "agent") {
+            setIsAuthorized(true);
+          }
+        }
+      } catch (error) {
+        console.error("Auth check error:", error);
+      } finally {
+        setIsLoading(false);
       }
+    };
 
-    if (!token || !userString) {
-      router.push("/login?redirect=/agent");
-      return;
-    }
+    checkAuth();
+  }, []);
 
-    try {
-      const user = JSON.parse(userString);
-      const userRole = (user?.role || '').toString().toLowerCase();
-      
-      // Validate role
-      if (userRole !== "agent") { 
-        setAuthStatus("unauthorized");
-        return;
-      }
-     
-
-      setAuthStatus("authorized");
-    } catch (error) {
-      console.error("Error parsing user data:", error);
-      router.push("/login?redirect=/agent"); 
-    }
-  };
-
-    const timer = setTimeout(checkAuth, 100);
-    return () => clearTimeout(timer);
-  }, [router]);
-
-  if (authStatus === "loading") return <LoadingSpinner />;
-  if (authStatus === "unauthorized") {
-    router.push("/unauthorized");
+  if (isLoading) {
     return <LoadingSpinner />;
+  }
+
+  if (!isAuthorized) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold mb-2">Access Denied</h2>
+          <p className="text-gray-600">You don't have permission to access this page.</p>
+        </div>
+      </div>
+    );
   }
 
   return <div className="agent-dashboard">{children}</div>;

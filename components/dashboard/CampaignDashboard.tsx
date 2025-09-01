@@ -18,13 +18,13 @@ export default function CampaignDashboard() {
 
 
   useEffect(() => {
-    const storedToken = sessionStorage.getItem("token");
+    const storedToken = sessionStorage.getItem("accessToken");
         const storedUser = sessionStorage.getItem("user");
 
     if (storedToken) {
       setToken(storedToken);
     }
-    if (storedUser) {
+    if (storedUser && storedUser !== "undefined") {
       const parsedUser = JSON.parse(storedUser);
       setUser(parsedUser);
       if (parsedUser.name) {

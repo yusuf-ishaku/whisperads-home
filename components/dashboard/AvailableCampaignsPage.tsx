@@ -39,15 +39,15 @@ export default function AvailableCampaignsPage() {
   useEffect(() => {
     const fetchCampaigns = async () => {
       try {
-        const token = sessionStorage.getItem("token");
-        if (!token) {
+        const accessToken = sessionStorage.getItem("accessToken");
+        if (!accessToken) {
           throw new Error("Not authenticated");
         }
 
         const response = await fetch("/api/campaigns", {
           method: "GET",
           headers: {
-            "Authorization": `Bearer ${token}`
+            "Authorization": `Bearer ${accessToken}`
           }
         });
 
