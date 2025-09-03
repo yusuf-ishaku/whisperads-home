@@ -65,6 +65,7 @@ export default function GoogleSignInButton({
         }
 
         const data = await authResponse.json();
+        console.log(data);
          const accessToken = data.accessToken || data.token;
     if (!accessToken) {
       throw new Error('Access token missing in Google response');
