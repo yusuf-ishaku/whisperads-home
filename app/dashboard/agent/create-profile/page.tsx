@@ -35,59 +35,74 @@ export default function Home() {
     setCurrentScreen("second")
   }
 
-  const handleSecondScreenSubmit = async (data: any) => {
-    setIsSubmitting(true)
-    setError("")
+  // const handleSecondScreenSubmit = async (data: any) => {
+  //   setIsSubmitting(true)
+  //   setError("")
 
-    try {
-      const token = localStorage.getItem("accessToken")
-      const userId = formData.userId
+  //   try {
+  //     const token = localStorage.getItem("accessToken")
+  //     const userId = formData.userId
 
-      if (!token) {
-        throw new Error("Please login first")
-      }
-      if (!userId) {
-        throw new Error("User ID not found")
-      }
+  //     if (!token) {
+  //       throw new Error("Please login first")
+  //     }
+  //     if (!userId) {
+  //       throw new Error("User ID not found")
+  //     }
 
-      const response = await fetch("/api/profile", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          userId,
-          gender: formData.gender,
-          location: data.location,
-          ageRange: formData.age,
-          statusViewCount: data.statusViewCount,
-          // Add other required fields here
-        })
-      })
+  //     const response = await fetch("/api/profile", {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //         "Authorization": `Bearer ${token}`
+  //       },
+  //       body: JSON.stringify({
+  //         userId,
+  //         gender: formData.gender,
+  //         location: data.location,
+  //         ageRange: formData.age,
+  //         statusViewCount: data.statusViewCount,
+  //         // Add other required fields here
+  //       })
+  //     })
 
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || "Failed to create profile")
-      }
+  //     if (!response.ok) {
+  //       const errorData = await response.json()
+  //       throw new Error(errorData.message || "Failed to create profile")
+  //     }
 
-      // Update user profile complete status
-      const userData = localStorage.getItem("user")
-      if (userData) {
-        const user = JSON.parse(userData)
-        localStorage.setItem("user", JSON.stringify({
-          ...user,
-          profileComplete: true
-        }))
-      }
+  //     // Update user profile complete status
+  //     const userData = localStorage.getItem("user")
+  //     if (userData) {
+  //       const user = JSON.parse(userData)
+  //       localStorage.setItem("user", JSON.stringify({
+  //         ...user,
+  //         profileComplete: true
+  //       }))
+  //     }
 
-      setCurrentScreen("success")
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred")
-      console.error("Profile submission error:", err)
-    } finally {
-      setIsSubmitting(false)
+  //     setCurrentScreen("success")
+  //   } catch (err) {
+  //     setError(err instanceof Error ? err.message : "An error occurred")
+  //     console.error("Profile submission error:", err)
+  //   } finally {
+  //     setIsSubmitting(false)
+  //   }
+  // }
+
+    const handleSecondScreenSubmit = async (data: any) => {
+    // Simulation: Skip API call and directly show success
+    // Update user profile complete status
+    const userData = localStorage.getItem("user")
+    if (userData) {
+      const user = JSON.parse(userData)
+      localStorage.setItem("user", JSON.stringify({
+        ...user,
+        profileComplete: true
+      }))
     }
+
+    setCurrentScreen("success")
   }
 
   const handleContinueAfterSuccess = () => {
@@ -106,8 +121,8 @@ export default function Home() {
         {currentScreen === "second" && (
           <SecondScreen 
             onSubmit={handleSecondScreenSubmit} 
-            isSubmitting={isSubmitting} 
-            error={error}
+            isSubmitting={false} 
+            error=""
           />
         )}
         {currentScreen === "success" && <SuccessModal onContinue={handleContinueAfterSuccess} />}

@@ -9,7 +9,7 @@ function page() {
       <div className="w-full max-w-md">
         <AdProfileFirstScreen onSubmit={(data) => console.log(data)} />
       </div>
-    </main>
+    </main> 
   );
 }
 

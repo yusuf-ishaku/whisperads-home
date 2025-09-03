@@ -32,7 +32,7 @@ export default function AllAgentCampaigns() {
   const router = useRouter();
 
   useEffect(() => {
-    const userData = sessionStorage.getItem("user");
+    const userData = localStorage.getItem("user");
     if (userData) {
       try {
         const user = JSON.parse(userData);
