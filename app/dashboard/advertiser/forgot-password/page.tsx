@@ -42,8 +42,8 @@ function ForgotPassword({ params }: { params: { role: string } }) {
       email: "",
       password: "",
       // whatsappNumber: "",
-      accountNumber: "",
-      bank: "",
+      // accountNumber: "",
+      // bank: "",
     },
   });
   async function onSubmit(data: SignUpValues) {

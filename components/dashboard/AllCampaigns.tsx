@@ -4,6 +4,8 @@ import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { authFetch } from "@/utils/api";
+
 
 interface Campaign {
   id: number;
@@ -35,7 +37,7 @@ export default function AllCampaigns() {
   const router = useRouter();
 
   useEffect(() => {
-    const userData = sessionStorage.getItem("user");
+    const userData = localStorage.getItem("user");
     if (userData) {
       try {
         const user = JSON.parse(userData);
@@ -56,20 +58,31 @@ export default function AllCampaigns() {
   useEffect(() => {
     const fetchCampaigns = async () => {
       try {
-        const token = sessionStorage.getItem("token");
-        console.log("Token from sessionStorage:", token);
+        const token = localStorage.getItem("accessToken") || localStorage.getItem("token");
+        console.log("Token from localStorage:", token);
 
         if (!token) {
           throw new Error("Not authenticated");
         }
 
-        const response = await fetch("https://whisperads-api-production.up.railway.app/campaigns/my-campaigns", {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const response = await authFetch(
+          "https://whisperads-api-production.up.railway.app/campaigns/my-campaigns",
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
         console.log("Response status:", response.status);
+
+        if (response.status === 401) {
+          // Token expired or invalid
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+          router.push("/login");
+          return;
+        }
 
         if (!response.ok) {
           const errorData = await response.json();
@@ -142,10 +155,10 @@ export default function AllCampaigns() {
           campaigns.map((campaign) => (
             <Link
               key={campaign.id}
-             href={{
-    pathname: `/dashboard/${role}/campaigns/${campaign.id}`,
-    query: { campaign: JSON.stringify(campaign) }
-  }}
+              href={{
+                pathname: `/dashboard/${role}/campaigns/${campaign.id}`,
+                query: { campaign: JSON.stringify(campaign) },
+              }}
               className="block border-b border-gray-200 px-7 py-5 h-28 bg-white hover:bg-gray-50 transition-colors"
             >
               <div className="flex">

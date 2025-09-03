@@ -11,7 +11,7 @@ interface AdFirstScreenProps {
         companyName: string
         phoneNumber: string
         industry: string
-    }) => void
+    }) => void 
 }
 
 export default function AdProfileFirstScreen({ onSubmit }: AdFirstScreenProps) {

@@ -32,7 +32,7 @@ export default function AllAgentCampaigns() {
   const router = useRouter();
 
   useEffect(() => {
-    const userData = sessionStorage.getItem("user");
+    const userData = localStorage.getItem("user");
     if (userData) {
       try {
         const user = JSON.parse(userData);
@@ -53,8 +53,8 @@ export default function AllAgentCampaigns() {
   useEffect(() => {
     const fetchCampaigns = async () => {
       try {
-        const token = sessionStorage.getItem("token");
-        console.log("Token from sessionStorage:", token);
+        const token = localStorage.getItem("accessToken");
+        console.log("Token from localStorage:", token);
 
         if (!token) {
           throw new Error("Not authenticated");

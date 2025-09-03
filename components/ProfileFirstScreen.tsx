@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { ChevronLeft } from "lucide-react"
 import Image from "next/image"
 
@@ -21,6 +21,19 @@ export default function ProfileFirstScreen({ onSubmit }: FirstScreenProps) {
   const [otp, setOtp] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
+  const [isFormValid, setIsFormValid] = useState(false)
+
+   useEffect(() => {
+    if (verificationStep === "input") {
+      setIsFormValid(validatePhoneNumber(whatsappNumber))
+    } else {
+      setIsFormValid(
+        otp.length === 6 && 
+        gender.trim() !== "" && 
+        age.trim() !== ""
+      )
+    }
+  }, [whatsappNumber, gender, age, otp, verificationStep])
 
   const validatePhoneNumber = (number: string): boolean => {
     // Basic validation for international format
@@ -162,7 +175,6 @@ export default function ProfileFirstScreen({ onSubmit }: FirstScreenProps) {
                       </option>
                       <option value="male">Male</option>
                       <option value="female">Female</option>
-                      <option value="other">Other</option>
                     </select>
                     <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                       <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">

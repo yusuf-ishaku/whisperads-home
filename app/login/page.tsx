@@ -22,11 +22,22 @@ import {
 import { signUpSchema, type SignUpValues } from "@/lib/validations/auth";
 import Google from "@/components/icons/Google";
 import LoginSuccessModal from "@/components/LoginSuccessModal";
-import { useAuthCheck } from "@/hooks/useAuth";
 import { toast } from "sonner";
+import GoogleSignInButton from "@/components/GoogleSignInButton";
+import { jwtDecode } from "jwt-decode";
+
+interface TokenPayload {
+  data: {
+    id: string;
+    email: string;
+    role: string;
+    [key: string]: any;
+  };
+  exp: number;
+  iat: number;
+}
 
 function LoginContent() {
-  useAuthCheck();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [showPassword, setShowPassword] = useState(false);
@@ -45,17 +56,26 @@ function LoginContent() {
 
   useEffect(() => {
     const roleParam =
-      searchParams.get("role") || sessionStorage.getItem("tempRole");
+      searchParams.get("role") ||
+      sessionStorage.getItem("tempRole") ||
+      localStorage.getItem("role");
 
-    if (!roleParam) {
-      toast.error("Please select a role first");
-      router.push("/choose-role");
-    } else {
+    if (roleParam) {
       setRole(roleParam);
       sessionStorage.removeItem("tempRole");
       toast.info(`Logging in as ${roleParam}`);
+    } else {
+      // 🚨 If no role at all, force them to choose one
+      toast.error("Please select a role first");
+      router.replace("/choose-role");
     }
   }, [searchParams, router]);
+
+  useEffect(() => {
+  console.log("accessToken:", localStorage.getItem("accessToken"));
+  console.log("user:", localStorage.getItem("user"));
+  console.log("user type:", typeof localStorage.getItem("user"));
+}, []);
 
   async function onSubmit(data: SignUpValues) {
     setIsLoading(true);
@@ -108,38 +128,46 @@ function LoginContent() {
       const result = await loginResponse.json();
       console.log("Login API Response:", result);
 
+      const accessToken = result.accessToken || result.token;
+if (!accessToken) {
+  throw new Error("Authentication token missing in response");
+}
+
       if (!result.user?.role) {
         throw new Error("Role information missing in response");
       }
+      const decoded = jwtDecode<TokenPayload>(result.accessToken);
+      console.log("Decoded token:", decoded);
 
       const normalizedRole = result.user.role.toLowerCase();
       if (!["agent", "advertiser"].includes(normalizedRole)) {
         throw new Error("Invalid role received");
       }
 
-      const storage = data.rememberMe ? localStorage : sessionStorage;
-      storage.setItem("token", result.token);
-      storage.setItem("user", JSON.stringify(result.user));
+      localStorage.setItem("accessToken", accessToken);
+      localStorage.setItem("refreshToken", result.refreshToken);
+      localStorage.setItem("user", JSON.stringify(result.user));
+      setRole(normalizedRole);
+    
 
       toast.success(`Welcome back, ${result.user.name || result.user.email}!`);
+      console.log("Saved token:", localStorage.getItem("accessToken"));
 
       const profileCheck = await fetch("/api/profile", {
         method: "GET",
         headers: {
-          Authorization: `Bearer ${result.token}`,
+          Authorization: `Bearer ${result.accessToken}`,
+          "Content-Type": "application/json",
         },
       });
 
       const profileData = await profileCheck.json();
       console.log("Profile check result:", profileData);
 
-      if (profileData.hasProfile || result.user.profileComplete) {
-        toast.success("Redirecting to dashboard...");
-        router.push(`/dashboard/${normalizedRole}`);
+      if (result.user.profileComplete) {
+        router.push(`/dashboard/${result.user.role.toLowerCase()}`);
       } else {
-        toast.info("Please complete your profile to continue");
-
-        router.push(`/dashboard/${normalizedRole}/create-profile`);
+        router.push(`/dashboard/${result.user.role.toLowerCase()}/create-profile`);
       }
     } catch (error) {
       console.error(error);
@@ -296,7 +324,7 @@ function LoginContent() {
                     )}
                   />
 
-                  <div>
+                  <Link href="/forgot-password">
                     <p
                       className="text-xs text-[#009444] font-normal cursor-pointer"
                       onClick={() =>
@@ -305,7 +333,7 @@ function LoginContent() {
                     >
                       Forgot Password
                     </p>
-                  </div>
+                  </Link>
                 </div>
 
                 <div className="py-3">
@@ -327,14 +355,31 @@ function LoginContent() {
                   <div className="flex-grow border-t border-gray-300"></div>
                 </div>
 
-                <button
-                  type="button"
-                  className="w-full text-black flex items-center justify-center text-center space-x-3 h-11 rounded-xl px-8 bg-white border border-gray-300"
-                  onClick={() => toast.info("Google login coming soon")}
-                >
-                  <Google />
-                  <p className="text-sm font-medium">Continue with Google</p>
-                </button>
+                <GoogleSignInButton
+                  role={role}
+                  isLoading={isLoading}
+                  onSuccess={(data) => {
+                    const normalizedRole = data.user.role.toLowerCase();
+
+                  localStorage.setItem("accessToken", data.accessToken || data.token);
+                    localStorage.setItem("refreshToken", data.refreshToken);
+                    localStorage.setItem("role", normalizedRole);
+                    localStorage.setItem("user", JSON.stringify(data.user));
+                    setRole(normalizedRole);
+
+                    if (data.user.profileComplete) {
+                      router.push(`/dashboard/${normalizedRole}`);
+                    } else {
+                      router.push(
+                        `/dashboard/${normalizedRole}/create-profile`
+                      );
+                    }
+                  }}
+                  onError={(error) => {
+                    console.error("Google sign-in error:", error);
+                    toast.error("Google sign-in failed: " + error.message);
+                  }}
+                />
               </form>
             </Form>
           </div>

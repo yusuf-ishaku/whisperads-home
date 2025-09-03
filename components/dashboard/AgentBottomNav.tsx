@@ -13,7 +13,7 @@ const navItems = [
 ]
 
 function NavItem({ icon, label, href, active }: NavItemProps) {
-  return (
+  return ( 
     <Link href={href} passHref>
       <div className="flex flex-col items-center cursor-pointer">
         <div className={`${active ? "text-primary" : "text-gray-500"}`}>{icon}</div>
@@ -34,7 +34,7 @@ interface NavItemProps {
 
 export default function AgentBottomNav() {
   const pathname = usePathname()
-
+ 
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around py-2 max-w-[400px] mx-auto">
       {navItems.map((item) => (

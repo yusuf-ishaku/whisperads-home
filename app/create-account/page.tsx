@@ -22,7 +22,8 @@ import { signUpSchema, type SignUpValues } from "@/lib/validations/auth";
 import Google from "@/components/icons/Google";
 import { useSearchParams } from "next/navigation";
 import AccountSuccessModal from "@/components/AccountSuccessModal";
-
+import { toast } from "sonner";
+import GoogleSignInButton from "@/components/GoogleSignInButton";
 
 function CreateAccountContent() {
   const router = useRouter();
@@ -40,14 +41,19 @@ function CreateAccountContent() {
     },
   });
 
-   useEffect(() => {
-    const roleParam = searchParams.get("role") || sessionStorage.getItem('tempRole');
-    
+  useEffect(() => {
+    const roleParam =
+      searchParams.get("role") ||
+      sessionStorage.getItem("tempRole") ||
+      localStorage.getItem("role");
+
     if (!roleParam) {
+      toast.error("Please select a role first");
       router.push("/choose-role");
     } else {
       setRole(roleParam);
-      sessionStorage.removeItem('tempRole');
+      sessionStorage.removeItem("tempRole");
+      toast.info(`Logging in as ${roleParam}`);
     }
   }, [searchParams, router]);
 
@@ -58,16 +64,19 @@ function CreateAccountContent() {
         throw new Error("Role is missing");
       }
 
-      const response = await fetch("/api/create-account", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          ...data,
-          role,
-        }),
-      });
+      const response = await fetch(
+        "https://whisperads-api-production.up.railway.app/auth/signup",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            ...data,
+            role,
+          }),
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -75,36 +84,121 @@ function CreateAccountContent() {
       }
 
       const result = await response.json();
+      console.log("Create Account Response:", result);
+
+const accessToken = result.accessToken || result.token;
+if (!accessToken) {
+  throw new Error("Authentication token missing in response");
+}
 
       sessionStorage.setItem("user", JSON.stringify(result.user));
-      sessionStorage.setItem("token", result.token);
+      sessionStorage.setItem("accessToken", accessToken);
+      sessionStorage.setItem("refreshToken", result.refreshToken);
 
       setShowSuccessModal(true);
     } catch (error) {
       console.error(error);
-      form.setError("root", { message: (error as Error).message });
+      const errorMessage =
+        error instanceof Error ? error.message : "Create Account failed";
+      toast.error(errorMessage);
+      form.setError("root", { message: errorMessage });
     } finally {
       setIsLoading(false);
     }
   }
 
+  // async function onSubmit(data: SignUpValues) {
+  //   setIsLoading(true);
+  //   try {
+  //     if (!role) {
+  //       throw new Error("Role is missing");
+  //     }
+
+  //     const response = await fetch("https://whisperads-api-production.up.railway.app/auth/signup", {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify({
+  //         ...data,
+  //         role,
+  //       }),
+  //     });
+
+  //     if (!response.ok) {
+  //       const errorData = await response.json();
+  //       throw new Error(errorData.message || "Create Account failed");
+  //     }
+
+  //     const result = await response.json();
+
+  //     sessionStorage.setItem("user", JSON.stringify(result.user));
+  //     sessionStorage.setItem("token", result.token);
+
+  //     setShowSuccessModal(true);
+  //   } catch (error) {
+  //     console.error(error);
+  //     const errorMessage = error instanceof Error ? error.message : "Create Account failed";
+  //     toast.error(errorMessage);
+  //     form.setError("root", { message: errorMessage });
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // }
+
+  // async function onSubmit(data: SignUpValues) {
+  //   setIsLoading(true);
+  //   try {
+  //     if (!role) {
+  //       throw new Error("Role is missing");
+  //     }
+
+  //     const response = await fetch("/api/create-account", {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify({
+  //         ...data,
+  //         role,
+  //       }),
+  //     });
+
+  //     if (!response.ok) {
+  //       const errorData = await response.json();
+  //       throw new Error(errorData.message || "Create Account failed");
+  //     }
+
+  //     const result = await response.json();
+
+  //     sessionStorage.setItem("user", JSON.stringify(result.user));
+  //     sessionStorage.setItem("token", result.token);
+
+  //     setShowSuccessModal(true);
+  //   } catch (error) {
+  //     console.error(error);
+  //     form.setError("root", { message: (error as Error).message });
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // }
 
   return (
     <>
       {showSuccessModal && <AccountSuccessModal role={role || ""} />}
 
       <main className="text-5xl text-black font-bold h-screen">
-         <header className="bg-primary p-4 flex items-center ">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="text-white"
-                  onClick={() => router.back()}
-                >
-                  <ArrowLeft className="h-6 w-6" />
-                </Button>
-                <h1 className="text-white text-lg font-bold cursor-pointer">Back</h1>
-              </header>
+        <header className="bg-primary p-4 flex items-center ">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-white"
+            onClick={() => router.back()}
+          >
+            <ArrowLeft className="h-6 w-6" />
+          </Button>
+          <h1 className="text-white text-lg font-bold cursor-pointer">Back</h1>
+        </header>
         <div className="flex flex-col mt-10">
           <div className="flex justify-center p-4">
             <Image src="/logo.png" width={34} height={34} alt="logo" />
@@ -117,7 +211,10 @@ function CreateAccountContent() {
                 <p className="text-sm font-normal">Selected Role: {role}</p>
                 <p className="text-sm font-normal">
                   Already have an account?
-                  <Link className="text-primary px-1" href={`/login?role=${role?.toLowerCase()}`}>
+                  <Link
+                    className="text-primary px-1"
+                    href={`/login?role=${role?.toLowerCase()}`}
+                  >
                     Login
                   </Link>
                 </p>
@@ -204,13 +301,41 @@ function CreateAccountContent() {
                     <div className="flex-grow border-t border-gray-300"></div>
                   </div>
 
-                  <button
+                  <GoogleSignInButton
+                    role={role}
+                    isLoading={isLoading}
+                    buttonText="Sign up with Google"
+                    onSuccess={(data) => {
+                      // For new accounts, redirect to profile creation
+                      const normalizedRole = data.user.role.toLowerCase();
+
+                      // 🔥 FIX: Store the tokens properly
+                      localStorage.setItem("token", data.accessToken);
+                      localStorage.setItem("refreshToken", data.refreshToken);
+                      localStorage.setItem("role", normalizedRole);
+                      localStorage.setItem("user", JSON.stringify(data.user));
+
+                      router.push(
+                        `/dashboard/${normalizedRole}/create-profile`
+                      );
+                    }}
+                    onError={(error) => {
+                      console.error("Google sign-up error:", error);
+                      toast.error("Google sign-up failed: " + error.message);
+                    }}
+                  />
+
+                  {/* <button
                     type="button"
-                    className="w-full text-black flex items-center justify-center text-center space-x-3 h-11 rounded-xl px-8 bg-white border border-gray-300"
+                    className="w-full flex items-center justify-center gap-3 h-11 rounded-xl px-8 bg-white border border-gray-300 hover:bg-gray-50 transition-colors"
                   >
-                    <Google />
-                    <p className="text-sm font-medium">Continue with Google</p>
-                  </button>
+                  
+                      
+                       
+                        <span className="text-sm font-medium">Continue with Google</span>
+                      
+                  
+                  </button> */}
                 </form>
               </Form>
             </div>
@@ -221,11 +346,14 @@ function CreateAccountContent() {
   );
 }
 
-export default function CreateAccount({ params }: { params: { role: string } }) {
+export default function CreateAccount({
+  params,
+}: {
+  params: { role: string };
+}) {
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      <CreateAccountContent  />
+      <CreateAccountContent />
     </Suspense>
   );
 }
-

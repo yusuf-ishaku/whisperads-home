@@ -18,6 +18,7 @@ interface CampaignSummaryModalProps {
     language: string;
     adDuration: string;
     totalAmount: number;
+    tags: string;
   };
 }
 

@@ -1,51 +1,41 @@
+// app/api/auth/check/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import jwt from 'jsonwebtoken';
-
-interface JwtPayload {
-  data: {
-    id: string;
-    email: string;
-    role: string;
-    profileComplete?: boolean;
-    // other fields from your JWT
-  };
-  iat: number;
-  exp: number;
-}
 
 export async function GET(request: NextRequest) {
   try {
-    const token = request.cookies.get('auth_token')?.value;
+    // Check Authorization header first
+    const authHeader = request.headers.get('authorization');
     
-    if (!token) {
-      return NextResponse.json({ 
-        authenticated: false,
-        reason: "No token found" 
-      });
-    }
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
-    
-    if (!decoded.data) {
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.substring(7);
+      
+      // ✅ Just check if token exists, don't verify it
       return NextResponse.json({
-        authenticated: false,
-        reason: "Invalid token structure"
+        authenticated: true,
+        user: null // User details come from frontend storage
       });
     }
 
-    return NextResponse.json({
-      authenticated: true,
-      user: {
-        id: decoded.data.id,
-        email: decoded.data.email,
-        role: decoded.data.role,
-        profileComplete: decoded.data.profileComplete || false
-      }
+    // Check cookie as fallback
+    const token = request.cookies.get('accessToken')?.value;
+    if (token) {
+      return NextResponse.json({
+        authenticated: true,
+        user: null
+      });
+    }
+
+    // No token found
+    return NextResponse.json({ 
+      authenticated: false,
+      reason: "No token found" 
     });
+
   } catch (error: any) {
+    console.error("Auth check error:", error);
     return NextResponse.json({
       authenticated: false,
-      reason: error.message || "Token verification failed"
+      reason: error.message || "Authentication check failed"
     });
   }
 }

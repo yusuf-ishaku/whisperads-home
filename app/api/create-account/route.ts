@@ -5,7 +5,7 @@ const baseUrl = process.env.BASE_URL || "";
 export async function POST(request: NextRequest) {
   try {
     const { email, password, role } = await request.json();
-    
+
     const res = await fetch(`${baseUrl}/auth/signup`, {
       method: "POST",
       headers: {
@@ -20,32 +20,35 @@ export async function POST(request: NextRequest) {
     }
 
     const responseData = await res.json();
-    
-    if (!responseData.jwt) {
+    console.log("Signup API Response:", responseData); // Debug log
+
+    if (!responseData.accessToken) {
       throw {
         message: "Authentication token missing in response",
-        statusCode: 500
+        statusCode: 500,
       };
     }
 
-    return NextResponse.json({
-      user: {
-        id: responseData.id,
-        email: responseData.email,
-        name: responseData.name || '',
-        role: responseData.role,
-        advertiserId: responseData.advertiserId || responseData.id
-      },
-      token: responseData.jwt,
-      success: true
-    });
+   const standardizedResponse = {
+  user: {
+    id: responseData.id,
+    email: responseData.email,
+    name: responseData.name || '',
+    role: responseData.role,
+    advertiserId: responseData.advertiserId || responseData.id
+  },
+  accessToken: responseData.accessToken, // Already in correct format
+  refreshToken: responseData.refreshToken,
+  success: true
+};
 
+    return NextResponse.json(standardizedResponse);
   } catch (error: any) {
     console.error("API route error:", error);
     return NextResponse.json(
-      { 
+      {
         message: error?.message || "Something went wrong",
-        success: false 
+        success: false,
       },
       { status: error.statusCode || 500 }
     );

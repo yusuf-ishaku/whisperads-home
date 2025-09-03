@@ -42,13 +42,22 @@ function AgentAvailableCampaigns() {
   useEffect(() => {
     const fetchCampaigns = async () => {
       try {
-        const token = sessionStorage.getItem("token");
+        const token = localStorage.getItem("accessToken");
         if (!token) throw new Error("Not authenticated");
 
         const response = await fetch("https://whisperads-api-production.up.railway.app/campaigns/match", {
           method: "GET",
           headers: { "Authorization": `Bearer ${token}` }
         });
+
+        if (response.status === 401) {
+          localStorage.removeItem("accessToken");
+          localStorage.removeItem("refreshToken");
+          localStorage.removeItem("user");
+          window.location.href = "/login";
+          return;
+        }
+
 
         if (!response.ok) {
           const errorData = await response.json();

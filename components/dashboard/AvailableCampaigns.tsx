@@ -42,7 +42,7 @@ function AvailableCampaigns() {
   useEffect(() => {
     const fetchCampaigns = async () => {
       try {
-        const token = sessionStorage.getItem("token");
+        const token = sessionStorage.getItem("accessToken");
         if (!token) throw new Error("Not authenticated");
 
         const response = await fetch("/api/campaigns", {

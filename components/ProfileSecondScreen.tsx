@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { ChevronLeft } from "lucide-react"
 import Image from "next/image"
 
@@ -21,6 +21,14 @@ export default function ProfileSecondScreen({ onSubmit, isSubmitting, error  }: 
   const [statusViewCount, setStatusViewCount] = useState("")
   const [screenshot, setScreenshot] = useState<File | null>(null)
   const [fileName, setFileName] = useState("No file chosen")
+    const [isFormValid, setIsFormValid] = useState(false)
+
+      useEffect(() => {
+    setIsFormValid(
+      location.trim() !== "" && 
+      statusViewCount.trim() !== ""
+    )
+  }, [location, statusViewCount])
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -31,7 +39,9 @@ export default function ProfileSecondScreen({ onSubmit, isSubmitting, error  }: 
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    onSubmit({ location, statusViewCount, screenshot })
+    if (isFormValid) {
+      onSubmit({ location, statusViewCount, screenshot })
+    }
   }
 
   return (

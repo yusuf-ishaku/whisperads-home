@@ -25,6 +25,7 @@ function ChooseRoleContent() {
     sessionStorage.setItem('tempRole', role);
   };
 
+
   return (
     <div className="min-h-screen bg-background">
       <header className="bg-primary p-4 flex items-center">

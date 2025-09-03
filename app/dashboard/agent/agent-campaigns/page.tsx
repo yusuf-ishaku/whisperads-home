@@ -8,7 +8,7 @@ function page() {
     <div>
         <AllAgentCampaigns/>
         <AgentBottomNav/>
-    </div>
+    </div> 
   )
 }
 
