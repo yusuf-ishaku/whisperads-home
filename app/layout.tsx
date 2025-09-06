@@ -28,7 +28,6 @@ export default function RootLayout({
       <body className={`${inter.className} ${roboto.className}`}>
         <ClientProviders>{children}</ClientProviders>
         <Toaster position="top-right" />
-        
       </body>
     </html>
   );

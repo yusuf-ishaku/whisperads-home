@@ -86,10 +86,10 @@ function CreateAccountContent() {
       const result = await response.json();
       console.log("Create Account Response:", result);
 
-const accessToken = result.accessToken || result.token;
-if (!accessToken) {
-  throw new Error("Authentication token missing in response");
-}
+      const accessToken = result.accessToken || result.token;
+      if (!accessToken) {
+        throw new Error("Authentication token missing in response");
+      }
 
       sessionStorage.setItem("user", JSON.stringify(result.user));
       sessionStorage.setItem("accessToken", accessToken);

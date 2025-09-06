@@ -3,7 +3,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
-
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
