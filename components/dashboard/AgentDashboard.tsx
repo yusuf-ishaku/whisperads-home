@@ -64,7 +64,6 @@ export default function AgentDashboard() {
         <AgentStats />
         <AgentActiveCampaigns/>
         <AgentAvailableCampaigns/>
-       
       </div>
       <AgentBottomNav />
     </>
