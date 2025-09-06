@@ -215,7 +215,7 @@ export default function GoogleSignInButton({
           className="w-full flex items-center justify-center gap-3 h-11 rounded-xl px-8 bg-white border border-gray-300 hover:bg-gray-50 transition-colors"
           disabled={isLoading || !role}
           onClick={() => {
-            window.location.href = `http://localhost:8000/auth/google?role=${role}`;
+            window.location.href = `https://whisperads-api-production.up.railway.app/auth/google?role=${role}`;
           }}
         >
           <Google />
