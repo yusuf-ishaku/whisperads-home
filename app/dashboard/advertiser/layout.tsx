@@ -10,46 +10,46 @@ export default function AdvertiserLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-    const pathname = usePathname();
+  const pathname = usePathname();
   const [authStatus, setAuthStatus] = useState<"loading" | "authorized" | "unauthorized">("loading");
 
-useEffect(() => {
-  if (typeof window === "undefined") return;
+  useEffect(() => {
+    if (typeof window === "undefined") return;
 
-  const checkAuth = () => {
-    const token = localStorage.getItem("accessToken")  || localStorage.getItem("token")  ;
-    const userString = localStorage.getItem("user");
+    const checkAuth = () => {
+      const token = localStorage.getItem("accessToken") || localStorage.getItem("token");
+      const userString = localStorage.getItem("user");
 
-    if (pathname?.includes("/create-profile")) {
-      setAuthStatus("authorized");
-      return;
-    }
-    
-    if (!token || !userString) {
-      router.push("/login?redirect=" + pathname);
-      return;
-    }
-
-    try {
-      const user = JSON.parse(userString);
-      const userRole = (user?.role || '').toString().toLowerCase();
-      
-      // Validate role
-      if (userRole !== "advertiser") { // or "agent" for agent layout
-        setAuthStatus("unauthorized");
+      if (pathname?.includes("/create-profile")) {
+        setAuthStatus("authorized");
         return;
       }
 
-      setAuthStatus("authorized");
-    } catch (error) {
-      console.error("Error parsing user data:", error);
-      router.push("/login?redirect=" + pathname);
-    }
-  };
+      if (!token || !userString) {
+        router.push("/login?redirect=" + pathname);
+        return;
+      }
 
-  const timer = setTimeout(checkAuth, 100);
-  return () => clearTimeout(timer);
-}, [router, pathname]);
+      try {
+        const user = JSON.parse(userString);
+        const userRole = (user?.role || '').toString().toLowerCase();
+
+        // Validate role
+        if (userRole !== "advertiser") { // or "agent" for agent layout
+          setAuthStatus("unauthorized");
+          return;
+        }
+
+        setAuthStatus("authorized");
+      } catch (error) {
+        console.error("Error parsing user data:", error);
+        router.push("/login?redirect=" + pathname);
+      }
+    };
+
+    const timer = setTimeout(checkAuth, 100);
+    return () => clearTimeout(timer);
+  }, [router, pathname]);
 
   if (authStatus === "loading") return <LoadingSpinner />;
   if (authStatus === "unauthorized") {

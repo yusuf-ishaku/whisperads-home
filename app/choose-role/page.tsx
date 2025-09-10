@@ -16,12 +16,12 @@ function ChooseRoleContent() {
 
   const handleProceed = () => {
     if (!selectedRole) return;
-    
+
     const path = isExistingUser ? "/login" : "/create-account";
     const role = selectedRole.toLowerCase();
-    
+
     router.push(`${path}?role=${role}`);
-    
+
     sessionStorage.setItem('tempRole', role);
   };
 
@@ -37,7 +37,7 @@ function ChooseRoleContent() {
         >
           <ArrowLeft className="h-6 w-6" />
         </Button>
- <h1 className="text-white text-lg font-bold">
+        <h1 className="text-white text-lg font-bold">
           Choose Role
         </h1>      </header>
       <div className="p-4 max-w-md mx-auto">
@@ -58,28 +58,26 @@ function ChooseRoleContent() {
 
           <div className="grid grid-cols-2 gap-4 mb-6">
             <button
-              className={`p-4 rounded-xl border-2 transition-all ${
-                selectedRole === "Advertiser"
+              className={`p-4 rounded-xl border-2 transition-all ${selectedRole === "Advertiser"
                   ? "border-primary bg-primary/5"
                   : "border-gray-200"
-              }`}
+                }`}
               onClick={() => setSelectedRole("Advertiser")}
             >
               <span className="font-medium">Advertiser</span>
             </button>
             <button
-              className={`p-4 rounded-xl border-2 transition-all ${
-                selectedRole === "Agent"
+              className={`p-4 rounded-xl border-2 transition-all ${selectedRole === "Agent"
                   ? "border-primary bg-primary/5"
                   : "border-gray-200"
-              }`}
+                }`}
               onClick={() => setSelectedRole("Agent")}
             >
               <span className="font-medium">Agent</span>
             </button>
           </div>
 
-           <div className="flex items-center justify-center mb-4">
+          <div className="flex items-center justify-center mb-4">
             <div className="flex-grow border-t border-gray-200"></div>
             <span className="px-3 text-sm text-gray-500">
               {isExistingUser ? "New user?" : "Existing user?"}
@@ -107,16 +105,16 @@ function ChooseRoleContent() {
       </div>
     </div>
   );
-  
+
 }
 
 
 export default function ChooseRole() {
- return (
+  return (
     <Suspense fallback={<div>Loading...</div>}>
       <ChooseRoleContent />
     </Suspense>
   );
 
-  
+
 }
