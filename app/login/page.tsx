@@ -57,7 +57,7 @@ function LoginContent() {
   useEffect(() => {
     const roleParam =
       searchParams.get("role") ||
-      sessionStorage.getItem("tempRole") ||
+      sessionStorage.getItem("tempRole") || 
       localStorage.getItem("role");
 
     if (roleParam) {

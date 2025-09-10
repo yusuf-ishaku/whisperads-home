@@ -91,11 +91,28 @@ if (!accessToken) {
   throw new Error("Authentication token missing in response");
 }
 
-      sessionStorage.setItem("user", JSON.stringify(result.user));
-      sessionStorage.setItem("accessToken", accessToken);
-      sessionStorage.setItem("refreshToken", result.refreshToken);
+const user = {
+  id: result.id,
+  email: result.email,
+  name: result.name || "",
+  role: result.role?.toLowerCase(),
+  advertiserId: result.advertiserId || result.id,
+  profileComplete: result.profileComplete || false,
+};
 
-      setShowSuccessModal(true);
+    localStorage.setItem("user", JSON.stringify(user));
+localStorage.setItem("accessToken", accessToken);
+if (result.refreshToken) {
+  localStorage.setItem("refreshToken", result.refreshToken);
+}
+localStorage.setItem("role", user.role);
+
+toast.success("Account created successfully!");
+router.push(`/dashboard/${user.role}/create-profile`);
+
+
+
+      // setShowSuccessModal(true);
     } catch (error) {
       console.error(error);
       const errorMessage =
@@ -107,81 +124,6 @@ if (!accessToken) {
     }
   }
 
-  // async function onSubmit(data: SignUpValues) {
-  //   setIsLoading(true);
-  //   try {
-  //     if (!role) {
-  //       throw new Error("Role is missing");
-  //     }
-
-  //     const response = await fetch("https://whisperads-api-production.up.railway.app/auth/signup", {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify({
-  //         ...data,
-  //         role,
-  //       }),
-  //     });
-
-  //     if (!response.ok) {
-  //       const errorData = await response.json();
-  //       throw new Error(errorData.message || "Create Account failed");
-  //     }
-
-  //     const result = await response.json();
-
-  //     sessionStorage.setItem("user", JSON.stringify(result.user));
-  //     sessionStorage.setItem("token", result.token);
-
-  //     setShowSuccessModal(true);
-  //   } catch (error) {
-  //     console.error(error);
-  //     const errorMessage = error instanceof Error ? error.message : "Create Account failed";
-  //     toast.error(errorMessage);
-  //     form.setError("root", { message: errorMessage });
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // }
-
-  // async function onSubmit(data: SignUpValues) {
-  //   setIsLoading(true);
-  //   try {
-  //     if (!role) {
-  //       throw new Error("Role is missing");
-  //     }
-
-  //     const response = await fetch("/api/create-account", {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify({
-  //         ...data,
-  //         role,
-  //       }),
-  //     });
-
-  //     if (!response.ok) {
-  //       const errorData = await response.json();
-  //       throw new Error(errorData.message || "Create Account failed");
-  //     }
-
-  //     const result = await response.json();
-
-  //     sessionStorage.setItem("user", JSON.stringify(result.user));
-  //     sessionStorage.setItem("token", result.token);
-
-  //     setShowSuccessModal(true);
-  //   } catch (error) {
-  //     console.error(error);
-  //     form.setError("root", { message: (error as Error).message });
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // }
 
   return (
     <>
@@ -310,7 +252,7 @@ if (!accessToken) {
                       const normalizedRole = data.user.role.toLowerCase();
 
                       // 🔥 FIX: Store the tokens properly
-                      localStorage.setItem("token", data.accessToken);
+                      localStorage.setItem("accessToken", data.accessToken);
                       localStorage.setItem("refreshToken", data.refreshToken);
                       localStorage.setItem("role", normalizedRole);
                       localStorage.setItem("user", JSON.stringify(data.user));
