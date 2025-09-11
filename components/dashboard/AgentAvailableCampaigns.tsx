@@ -5,6 +5,7 @@ import Image from "next/image";
 import More from "../icons/More";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Link from "next/link";
+import { toast } from "sonner";
 
 interface ApiCampaign {
   campaign: {
@@ -39,60 +40,59 @@ function AgentAvailableCampaigns() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    const fetchCampaigns = async () => {
-      try {
-        const token = localStorage.getItem("accessToken");
-        if (!token) throw new Error("Not authenticated");
+ useEffect(() => {
+  const fetchCampaigns = async () => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      console.log("Token:", token);
+      
+      if (!token) throw new Error("Not authenticated");
 
-        const response = await fetch("https://whisperads-api-production.up.railway.app/campaigns/match", {
-          method: "GET",
-          headers: { "Authorization": `Bearer ${token}` }
-        });
+      const response = await fetch("https://whisperads-api-production.up.railway.app/campaigns/match", {
+        method: "GET",
+        headers: { "Authorization": `Bearer ${token}` }
+      });
 
-        if (response.status === 401) {
-          localStorage.removeItem("accessToken");
-          localStorage.removeItem("refreshToken");
-          localStorage.removeItem("user");
-          window.location.href = "/login";
+      if (response.status === 401) {
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("refreshToken");
+        localStorage.removeItem("user");
+        window.location.href = "/login";
+        return;
+      }
+
+      if (response.status === 400) {
+        const errorData = await response.json();
+        if (errorData.error === "The user does not have a valid profile") {
+          // Redirect to profile creation
+
+          toast.error("Please complete your profile to view campaigns.");
+          // const userData = localStorage.getItem("user");
+          // if (userData) {
+          //   const user = JSON.parse(userData);
+          //   window.location.href = `/dashboard/${user.role}/create-profile`;
+          // }
           return;
         }
-
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || "Failed to fetch campaigns");
-        }
-
-        const apiData: ApiCampaign[] = await response.json();
-        
-        const transformedCampaigns = apiData.map((item, index) => {
-          const categories: ("for-you" | "real-estate" | "ecommerce" | "games")[] = [
-            "for-you", "real-estate", "ecommerce", "games"
-          ];
-          const category = categories[index % categories.length];
-
-          return {
-            id: item.campaign.id,
-            company: "Advertiser",
-            title: item.campaign.title,
-            description: item.campaign.caption,
-            image: item.campaign.mediaUrl || "/default-campaign.png",
-            logo: "/default-logo.png",
-            category
-          };
-        });
-
-        setCampaigns(transformedCampaigns);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load campaigns");
-      } finally {
-        setLoading(false);
+        throw new Error(errorData.message || "Failed to fetch campaigns");
       }
-    };
 
-    fetchCampaigns();
-  }, []);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to fetch campaigns");
+      }
+
+      const data = await response.json();
+      setCampaigns(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load campaigns");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchCampaigns();
+}, []);
 
   if (loading) {
     return (

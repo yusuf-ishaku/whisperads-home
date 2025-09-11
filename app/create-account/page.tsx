@@ -87,6 +87,9 @@ function CreateAccountContent() {
       console.log("Create Account Response:", result);
 
       const accessToken = result.accessToken || result.token;
+       if (result.accessToken) {
+    localStorage.setItem("accessToken", result.accessToken);
+  }
       if (!accessToken) {
         throw new Error("Authentication token missing in response");
       }
@@ -97,7 +100,8 @@ const user = {
   name: result.name || "",
   role: result.role?.toLowerCase(),
   advertiserId: result.advertiserId || result.id,
-  profileComplete: result.profileComplete || false,
+  profileComplete: true,
+   profile: result.profile || null 
 };
 
     localStorage.setItem("user", JSON.stringify(user));
@@ -106,6 +110,8 @@ if (result.refreshToken) {
   localStorage.setItem("refreshToken", result.refreshToken);
 }
 localStorage.setItem("role", user.role);
+localStorage.setItem("user", JSON.stringify({ ...result.user, profileComplete: true }));
+
 
 toast.success("Account created successfully!");
 router.push(`/dashboard/${user.role}/create-profile`);
@@ -243,7 +249,22 @@ router.push(`/dashboard/${user.role}/create-profile`);
                     <div className="flex-grow border-t border-gray-300"></div>
                   </div>
 
-                  <GoogleSignInButton
+                  
+                  {/* <button
+                    type="button"
+                    className="w-full flex items-center justify-center gap-3 h-11 rounded-xl px-8 bg-white border border-gray-300 hover:bg-gray-50 transition-colors"
+                  >
+                  
+                      
+                       
+                        <span className="text-sm font-medium">Continue with Google</span>
+                      
+                  
+                  </button> */}
+                </form>
+              </Form>
+
+              <GoogleSignInButton
                     role={role}
                     isLoading={isLoading}
                     buttonText="Sign up with Google"
@@ -267,19 +288,6 @@ router.push(`/dashboard/${user.role}/create-profile`);
                     }}
                   />
 
-                  {/* <button
-                    type="button"
-                    className="w-full flex items-center justify-center gap-3 h-11 rounded-xl px-8 bg-white border border-gray-300 hover:bg-gray-50 transition-colors"
-                  >
-                  
-                      
-                       
-                        <span className="text-sm font-medium">Continue with Google</span>
-                      
-                  
-                  </button> */}
-                </form>
-              </Form>
             </div>
           </div>
         </div>

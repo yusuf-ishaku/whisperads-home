@@ -51,9 +51,13 @@ export default function AdvertiserLayout({
     return () => clearTimeout(timer);
   }, [router, pathname]);
 
-  if (authStatus === "loading") return <LoadingSpinner />;
-  if (authStatus === "unauthorized") {
-    router.push("/unauthorized");
+  useEffect(() => {
+    if (authStatus === "unauthorized") {
+      router.push("/unauthorized");
+    }
+  }, [authStatus, router]);
+
+  if (authStatus === "loading" || authStatus === "unauthorized") {
     return <LoadingSpinner />;
   }
 

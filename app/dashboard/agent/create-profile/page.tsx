@@ -3,8 +3,11 @@ import { useState, useEffect } from "react"
 import FirstScreen from "@/components/ProfileFirstScreen"
 import SecondScreen from "@/components/ProfileSecondScreen"
 import SuccessModal from "@/components/ProfileSuccessModal"
+import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 
 export default function Home() {
+  const router = useRouter()
   const [currentScreen, setCurrentScreen] = useState<"first" | "second" | "success">("first")
   const [formData, setFormData] = useState({
     whatsappNumber: "",
@@ -90,19 +93,45 @@ export default function Home() {
   //   }
   // }
 
-    const handleSecondScreenSubmit = async (data: any) => {
-    // Simulation: Skip API call and directly show success
-    // Update user profile complete status
-    const userData = localStorage.getItem("user")
-    if (userData) {
-      const user = JSON.parse(userData)
-      localStorage.setItem("user", JSON.stringify({
-        ...user,
-        profileComplete: true
-      }))
-    }
+ const handleSecondScreenSubmit = async (data: any) => {
+    setIsSubmitting(true)
+    setError("")
 
-    setCurrentScreen("success")
+    try {
+      // Update user profile complete status
+      const userData = localStorage.getItem("user")
+      if (userData) {
+        const user = JSON.parse(userData)
+        const updatedUser = {
+          ...user,
+          profileComplete: true,
+          profile: {
+            whatsappNumber: formData.whatsappNumber,
+            gender: formData.gender,
+            age: formData.age,
+            location: data.location,
+            statusViewCount: data.statusViewCount
+          }
+        }
+        localStorage.setItem("user", JSON.stringify(updatedUser))
+        
+        // Also update the token to include profile completion info
+        // This simulates what the backend would do
+        const token = localStorage.getItem("accessToken")
+        if (token) {
+          // In a real app, the backend would issue a new token with updated claims
+          // For simulation, we'll just store a flag
+          localStorage.setItem('hasProfile', 'true')
+        }
+      }
+
+      setCurrentScreen("success")
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An error occurred")
+      console.error("Profile submission error:", err)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const handleContinueAfterSuccess = () => {
@@ -121,8 +150,8 @@ export default function Home() {
         {currentScreen === "second" && (
           <SecondScreen 
             onSubmit={handleSecondScreenSubmit} 
-            isSubmitting={false} 
-            error=""
+            isSubmitting={isSubmitting} 
+            error={error}
           />
         )}
         {currentScreen === "success" && <SuccessModal onContinue={handleContinueAfterSuccess} />}
