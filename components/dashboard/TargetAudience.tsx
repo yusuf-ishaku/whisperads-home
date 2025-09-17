@@ -37,6 +37,7 @@ type CampaignFormData = {
   influencerCount?: string;
   amountToSpend?: string; 
   viewGoal: string;
+  status:string;
 };
 
 const MOCK_TAGS = [
@@ -66,7 +67,7 @@ const LOCATIONS = [
   "Lagos", "Abuja", "Port Harcourt", "Kano", "Ibadan", 
   "Enugu", "Benin City", "Kaduna", "Warri", "Abeokuta",
   "Onitsha", "Jos", "Calabar", "Uyo", "Owerri"
-];
+]; 
 
 const LANGUAGES = [
   "English", "Yoruba", "Igbo", "Hausa", "Pidgin",
@@ -104,7 +105,7 @@ function TargetAudience() {
       setCampaignData(JSON.parse(storedData));
     } else {
       toast.error('No campaign data found. Please start over.');
-      router.push('/ad-creation');
+      router.push('/dashboard/advertiser/ad-creation');
     }
   }, [router]);
 
@@ -208,7 +209,7 @@ function TargetAudience() {
         budget: budget,
         startDate: new Date(campaignData!.startDate).toISOString(), 
         endDate: new Date(campaignData!.endDate).toISOString(),
-        status: "active", 
+        status: campaignData!.status ,
         advertiserId: user.advertiserId,
         perViewAmount: campaignData!.perViewAmount ? parseFloat(campaignData!.perViewAmount) : undefined,
         perInfluencerAmount: campaignData!.perInfluencerAmount ? parseFloat(campaignData!.perInfluencerAmount) : undefined,

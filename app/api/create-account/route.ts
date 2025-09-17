@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
     }
 
     const responseData = await res.json();
-    console.log("Signup API Response:", responseData); // Debug log
+    console.log("Signup API Response:", responseData);
 
     if (!responseData.accessToken) {
       throw {
@@ -28,21 +28,21 @@ export async function POST(request: NextRequest) {
         statusCode: 500,
       };
     }
-
-   const standardizedResponse = {
+const standardizedResponse = {
   user: {
     id: responseData.id,
     email: responseData.email,
     name: responseData.name || '',
-    role: responseData.role,
-    advertiserId: responseData.advertiserId || responseData.id
+    role: responseData.role?.toLowerCase(),
+    advertiserId: responseData.advertiserId || responseData.id,
+    profileComplete: responseData.profileComplete || false
   },
-  accessToken: responseData.accessToken, // Already in correct format
+  accessToken: responseData.accessToken || responseData.token,
   refreshToken: responseData.refreshToken,
   success: true
 };
 
-    return NextResponse.json(standardizedResponse);
+return NextResponse.json(standardizedResponse);
   } catch (error: any) {
     console.error("API route error:", error);
     return NextResponse.json(

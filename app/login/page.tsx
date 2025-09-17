@@ -56,7 +56,7 @@ function LoginContent() {
   useEffect(() => {
     const roleParam =
       searchParams.get("role") ||
-      sessionStorage.getItem("tempRole") ||
+      sessionStorage.getItem("tempRole") || 
       localStorage.getItem("role");
 
     if (roleParam) {
@@ -143,13 +143,21 @@ if (!accessToken) {
         throw new Error("Invalid role received");
       }
 
+      const user = {
+  id: result.user.id,
+  email: result.user.email,
+  name: result.user.name || "",
+  role: normalizedRole,
+  advertiserId: result.user.advertiserId || result.user.id,
+  profileComplete: result.user.profileComplete || false,
+};
+
       localStorage.setItem("accessToken", accessToken);
       localStorage.setItem("refreshToken", result.refreshToken);
-      localStorage.setItem("user", JSON.stringify(result.user));
+      localStorage.setItem("user", JSON.stringify(user));
       setRole(normalizedRole);
-    
 
-      toast.success(`Welcome back, ${result.user.name || result.user.email}!`);
+      toast.success(`Welcome back, ${user.name || user.email}!`);
       console.log("Saved token:", localStorage.getItem("accessToken"));
 
       const profileCheck = await fetch("/api/profile", {
@@ -160,14 +168,25 @@ if (!accessToken) {
         },
       });
 
+      if (!profileCheck.ok) {
+  throw new Error("Failed to fetch profile");
+}
+
       const profileData = await profileCheck.json();
       console.log("Profile check result:", profileData);
 
-      if (result.user.profileComplete) {
-        router.push(`/dashboard/${result.user.role.toLowerCase()}`);
-      } else {
-        router.push(`/dashboard/${result.user.role.toLowerCase()}/create-profile`);
-      }
+     if (profileData.hasProfile){
+      router.push(`/dashboard/${normalizedRole}`);
+     } else {
+      router.push(`/dashboard/${normalizedRole}/create-profile`);
+     }
+
+
+      // if (result.user.profileComplete) {
+      //   router.push(`/dashboard/${result.user.role.toLowerCase()}`);
+      // } else {
+      //   router.push(`/dashboard/${result.user.role.toLowerCase()}/create-profile`);
+      // }
     } catch (error) {
       console.error(error);
       const errorMessage =

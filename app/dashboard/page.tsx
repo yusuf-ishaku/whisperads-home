@@ -1,16 +1,17 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import LoadingSpinner from '@/components/LoadingSpinner'; // Assuming you have this component
+import LoadingSpinner from '@/components/LoadingSpinner'; 
+import { toast } from 'sonner';
 export default function DashboardPage() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        const fetchData = async () => {
+        const fetchData = async (token: string) => {
             try {
-                const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/me`, {
+                const response = await fetch("https://whisperads-api-production.up.railway.app/user/me", {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
@@ -22,13 +23,38 @@ export default function DashboardPage() {
                 }
 
                 const userData = await response.json();
-                localStorage.setItem('user', JSON.stringify(userData.user));
-                console.log(localStorage.getItem('user'));
+                localStorage.setItem('user', JSON.stringify(userData.user || userData));
+                console.log('User data stored:', localStorage.getItem('user'));
+
+                // Redirect based on profile completion status
+                if (userData.user?.profileComplete || userData.profileComplete) {
+                    router.push(`/dashboard/${userData.user?.role || userData.role}`);
+                } else {
+                    router.push(`/dashboard/${userData.user?.role || userData.role}/create-profile`);
+                }
+
             } catch (error) {
                 console.error('Error fetching user data:', error);
+                toast.error('Failed to load user data');
                 setIsLoading(false);
             }
-        }
+        };
+
+         const checkUserProfile = () => {
+            const userData = localStorage.getItem('user');
+            const token = localStorage.getItem('accessToken');
+            
+            if (userData && token) {
+                const user = JSON.parse(userData);
+                if (user.profileComplete) {
+                    router.push(`/dashboard/${user.role}`);
+                } else {
+                    router.push(`/dashboard/${user.role}/create-profile`);
+                }
+            } else {
+                setIsLoading(false);
+            }
+        };
         const token = searchParams.get('token');
         const role = searchParams.get('role');
 
@@ -36,17 +62,21 @@ export default function DashboardPage() {
         // Fetch user data if we have both token and userId
         if (token) {
             localStorage.setItem('accessToken', token);
-            localStorage.setItem('token', token);
-            localStorage.setItem('role', role || '');
-            fetchData();
-        }
-        if (role) {
-            console.log("role here:", role);
-            // Redirect to role-specific dashboard
-            router.push(`/dashboard/${role}`);
+             if (role) {
+                localStorage.setItem('role', role);
+            }
+            fetchData(token);
         } else {
-            setIsLoading(false);
+            // Check existing user data
+            checkUserProfile();
         }
+        // if (role) {
+        //     console.log("role here:", role);
+        //     // Redirect to role-specific dashboard
+        //     router.push(`/dashboard/${role}`);
+        // } else {
+        //     setIsLoading(false);
+        // }
     }, [router, searchParams]);
 
     if (isLoading) {

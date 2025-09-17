@@ -45,9 +45,12 @@ function AgentAvailableCampaigns() {
         const token = localStorage.getItem("accessToken");
         if (!token) throw new Error("Not authenticated");
 
-        const response = await fetch("https://whisperads-api-production.up.railway.app/campaigns/match", {
+        const response = await fetch("https://d9a172680695.ngrok-free.app/campaigns/match", {
           method: "GET",
-          headers: { "Authorization": `Bearer ${token}` }
+          headers: {
+             "Authorization": `Bearer ${token}`,
+             "ngrok-skip-browser-warning": "true",
+            }
         });
 
         if (response.status === 401) {
