@@ -128,9 +128,6 @@ function LoginContent() {
       console.log("Login API Response:", result);
 
       const accessToken = result.accessToken || result.token;
-       if (result.accessToken) {
-    localStorage.setItem("accessToken", result.accessToken);
-  }
 if (!accessToken) {
   throw new Error("Authentication token missing in response");
 }
@@ -146,39 +143,50 @@ if (!accessToken) {
         throw new Error("Invalid role received");
       }
 
-      localStorage.setItem("accessToken", accessToken);
-      localStorage.setItem("refreshToken", result.refreshToken);
-      const userData = {
-  ...result.user,
-  role: result.user.role.toLowerCase(),
-  profileComplete: true, // force true for now
+      const user = {
+  id: result.user.id,
+  email: result.user.email,
+  name: result.user.name || "",
+  role: normalizedRole,
+  advertiserId: result.user.advertiserId || result.user.id,
+  profileComplete: result.user.profileComplete || false,
 };
 
-localStorage.setItem("user", JSON.stringify(userData));
+      localStorage.setItem("accessToken", accessToken);
+      localStorage.setItem("refreshToken", result.refreshToken);
+      localStorage.setItem("user", JSON.stringify(user));
       setRole(normalizedRole);
-    
 
-      toast.success(`Welcome back, ${result.user.name || result.user.email}!`);
+      toast.success(`Welcome back, ${user.name || user.email}!`);
       console.log("Saved token:", localStorage.getItem("accessToken"));
 
-      // const profileCheck = await fetch("/api/profile", {
-      //   method: "GET",
-      //   headers: {
-      //     Authorization: `Bearer ${result.accessToken}`,
-      //     "Content-Type": "application/json",
-      //   },
-      // });
+      const profileCheck = await fetch("/api/profile", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${result.accessToken}`,
+          "Content-Type": "application/json",
+        },
+      });
 
-      // const profileData = await profileCheck.json();
-      // console.log("Profile check result:", profileData);
+      if (!profileCheck.ok) {
+  throw new Error("Failed to fetch profile");
+}
+
+      const profileData = await profileCheck.json();
+      console.log("Profile check result:", profileData);
+
+     if (profileData.hasProfile){
+      router.push(`/dashboard/${normalizedRole}`);
+     } else {
+      router.push(`/dashboard/${normalizedRole}/create-profile`);
+     }
+
 
       // if (result.user.profileComplete) {
       //   router.push(`/dashboard/${result.user.role.toLowerCase()}`);
       // } else {
       //   router.push(`/dashboard/${result.user.role.toLowerCase()}/create-profile`);
       // }
-      router.push(`/dashboard/${userData.role}`);
-
     } catch (error) {
       console.error(error);
       const errorMessage =
@@ -377,6 +385,13 @@ localStorage.setItem("user", JSON.stringify(userData));
                     localStorage.setItem("user", JSON.stringify(data.user));
                     setRole(normalizedRole);
 
+                    if (data.user.profileComplete) {
+                      router.push(`/dashboard/${normalizedRole}`);
+                    } else {
+                      router.push(
+                        `/dashboard/${normalizedRole}/create-profile`
+                      );
+                    }
                   }}
                   onError={(error) => {
                     console.error("Google sign-in error:", error);

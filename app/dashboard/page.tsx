@@ -11,7 +11,7 @@ export default function DashboardPage() {
     useEffect(() => {
         const fetchData = async (token: string) => {
             try {
-                const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/me`, {
+                const response = await fetch("https://whisperads-api-production.up.railway.app/user/me", {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'

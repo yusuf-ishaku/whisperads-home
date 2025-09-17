@@ -61,11 +61,12 @@ export default function AllAgentCampaigns() {
         }
 
         const response = await fetch(
-          "https://whisperads-api-production.up.railway.app/campaigns/match",
+          "https://d9a172680695.ngrok-free.app/campaigns/match",
           {
             method: "GET",
             headers: {
               Authorization: `Bearer ${token}`,
+               "ngrok-skip-browser-warning": "true",
             },
           }
         );

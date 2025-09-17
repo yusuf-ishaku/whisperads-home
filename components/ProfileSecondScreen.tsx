@@ -1,14 +1,13 @@
 "use client"
-
 import type React from "react"
-
 import { useEffect, useState } from "react"
 import { ChevronLeft } from "lucide-react"
 import Image from "next/image"
 
 interface SecondScreenProps {
-    onSubmit: (data: {
+  onSubmit: (data: {
     location: string
+    bio: string
     statusViewCount: string
     screenshot: File | null
   }) => void
@@ -16,19 +15,21 @@ interface SecondScreenProps {
   error: string
 }
 
-export default function ProfileSecondScreen({ onSubmit, isSubmitting, error  }: SecondScreenProps) {
+export default function ProfileSecondScreen({ onSubmit, isSubmitting, error }: SecondScreenProps) {
   const [location, setLocation] = useState("")
+  const [bio, setBio] = useState("")
   const [statusViewCount, setStatusViewCount] = useState("")
   const [screenshot, setScreenshot] = useState<File | null>(null)
   const [fileName, setFileName] = useState("No file chosen")
-    const [isFormValid, setIsFormValid] = useState(false)
+  const [isFormValid, setIsFormValid] = useState(false)
 
-      useEffect(() => {
-    setIsFormValid(
-      location.trim() !== "" && 
-      statusViewCount.trim() !== ""
-    )
-  }, [location, statusViewCount])
+ useEffect(() => {
+  setIsFormValid(
+    location.trim() !== "" && 
+    statusViewCount.trim() !== "" &&
+    /^\d+$/.test(statusViewCount) // Validate it contains only digits
+  )
+}, [location, statusViewCount])
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -40,7 +41,7 @@ export default function ProfileSecondScreen({ onSubmit, isSubmitting, error  }: 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (isFormValid) {
-      onSubmit({ location, statusViewCount, screenshot })
+      onSubmit({ location, bio, statusViewCount, screenshot })
     }
   }
 
@@ -89,23 +90,43 @@ export default function ProfileSecondScreen({ onSubmit, isSubmitting, error  }: 
             </div>
 
             <div>
+              <label htmlFor="bio" className="block text-sm font-semibold mb-1">
+                Bio
+              </label>
+              <textarea
+                id="bio"
+                placeholder="Tell us about yourself"
+                className="w-full p-2 text-sm border border-gray-300 rounded-[0.5rem]"
+                value={bio}
+                onChange={(e) => setBio(e.target.value)}
+                rows={3}
+              />
+            </div>
+
+            <div>
               <label htmlFor="statusViewCount" className="block text-sm font-semibold mb-1">
                 Status View Count Per Day
               </label>
               <input
                 id="statusViewCount"
                 type="text"
-                placeholder="1000 Views"
+                placeholder="1000"
                 className="w-full p-2 border border-gray-300 text-sm rounded-[0.5rem]"
                 value={statusViewCount}
-                onChange={(e) => setStatusViewCount(e.target.value)}
+                onChange={(e) => {
+    // Optional: Add validation to ensure only numbers are entered
+    const value = e.target.value;
+    if (/^\d*$/.test(value)) { // Only allow digits
+      setStatusViewCount(value);
+    }
+  }}
                 required
               />
             </div>
 
             <div>
               <label htmlFor="screenshot" className="block text-sm font-semibold mb-1">
-                Upload Screenshot of Your Status Views
+                Upload Screenshot of Your Status Views (Optional)
               </label>
               <div className="flex">
                 <label
@@ -129,19 +150,19 @@ export default function ProfileSecondScreen({ onSubmit, isSubmitting, error  }: 
             </div>
 
             {error && (
-            <div className="text-red-500 text-sm p-2 bg-red-50 rounded">
-              {error}
-            </div>
-          )}
+              <div className="text-red-500 text-sm p-2 bg-red-50 rounded">
+                {error}
+              </div>
+            )}
           </div>
 
-           <button
-          type="submit"
-          className="w-full bg-primary text-white py-3 rounded-[0.5rem] mt-8 font-medium hover:bg-green-700 transition-colors disabled:opacity-50"
-          disabled={isSubmitting}
-        >
-          {isSubmitting ? "Submitting..." : "Submit"}
-        </button>
+          <button
+            type="submit"
+            className="w-full bg-primary text-white py-3 rounded-[0.5rem] mt-8 font-medium hover:bg-green-700 transition-colors disabled:opacity-50"
+            disabled={isSubmitting || !isFormValid}
+          >
+            {isSubmitting ? "Submitting..." : "Complete Profile"}
+          </button>
         </form>
       </div>
     </div>

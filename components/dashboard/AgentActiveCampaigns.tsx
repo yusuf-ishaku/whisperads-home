@@ -33,7 +33,7 @@ interface CampaignCardProps {
   campaign: Campaign;
   onDetailsClick: (campaign: Campaign) => void;
   onUploadClick: () => void;
-} 
+}
 
 export default function AgentActiveCampaigns() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
@@ -51,27 +51,16 @@ export default function AgentActiveCampaigns() {
   useEffect(() => {
     const fetchActiveCampaigns = async () => {
       try {
-      const token = localStorage.getItem("accessToken");
-      if (!token) {
-        throw new Error("Not authenticated");
-      }
+        const token = localStorage.getItem("accessToken");
+          console.log("Token:", token);
+        if (!token) throw new Error("Not authenticated");
 
-      // Check if user has a profile
-      const userData = localStorage.getItem("user");
-      if (userData) {
-        const user = JSON.parse(userData);
-        if (!user.profileComplete) {
-          // throw new Error("Profile not completed");
-          console.warn("Profile not complete, but allowing simulation...");
-        }
-      }
-
-        const response = await fetch("https://whisperads-api-production.up.railway.app/campaigns/match", {
+        const response = await fetch("https://d9a172680695.ngrok-free.app/campaigns/match", {
           method: "GET",
-          headers: { 
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json"
-        }
+          headers: {
+             "Authorization": `Bearer ${token}`,
+             "ngrok-skip-browser-warning": "true",
+            }
         });
 
           if (response.status === 401) {
@@ -81,20 +70,6 @@ export default function AgentActiveCampaigns() {
           window.location.href = "/login";
           return;
         }
-
-         if (response.status === 400) {
-        // Profile not completed
-        const errorData = await response.json();
-        if (errorData.error === "The user does not have a valid profile") {
-          // Redirect to profile creation
-          const userData = localStorage.getItem("user");
-          if (userData) {
-            const user = JSON.parse(userData);
-            window.location.href = `/dashboard/${user.role}/create-profile`;
-          }
-          return;
-        }
-      }
 
         if (!response.ok) {
           const errorData = await response.json();

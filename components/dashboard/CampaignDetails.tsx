@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "../ui/use-toast";
 
 interface CampaignDetailsProps {
   params: {
@@ -52,7 +53,53 @@ export default function CampaignDetails({ params }: CampaignDetailsProps) {
   const [campaign, setCampaign] = useState<Campaign | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  
   const router = useRouter();
+  // inside CampaignDetails component
+
+const [updating, setUpdating] = useState(false);
+
+const handleToggleStatus = async () => {
+  if (!campaign) return;
+
+  const newStatus = campaign.status === "active" ? "draft" : "active";
+
+  try {
+    setUpdating(true);
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      setError("Authentication required");
+      return;
+    }
+
+    const campaignId = campaign.id;
+
+    const res = await fetch(
+      `https://whisperads-api-production.up.railway.app/campaigns/campaign/${campaignId}/status`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ status: newStatus }),
+      }
+    );
+
+    if (!res.ok) {
+      toast({ variant: "destructive", title: "Failed to update campaign status" });
+    }
+
+    // update UI
+    setCampaign({ ...campaign, status: newStatus });
+  } catch (err) {
+    console.error(err);
+    setError(err instanceof Error ? err.message : "Unknown error");
+  } finally {
+    setUpdating(false);
+  }
+};
+
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -80,8 +127,10 @@ export default function CampaignDetails({ params }: CampaignDetailsProps) {
           return;
         }
 
-        const endpoints = [
-          `https://whisperads-api-production.up.railway.app/campaigns/my-campaigns/${params.id}`,
+         const endpoints = [
+          `https://whisperads-api-production.up.railway.app/campaigns/campaign/${params.id}`,
+          `https://whisperads-api-production.up.railway.app/campaigns/${params.id}`,
+          // `https://whisperads-api-production.up.railway.app/campaigns/my-campaigns/${params.id}`,
         ];
 
         let campaignData = null;
@@ -219,6 +268,29 @@ export default function CampaignDetails({ params }: CampaignDetailsProps) {
               </p>
             </div>
           </div>
+
+          {/* Toggle Status Control */}
+<div className="flex items-center justify-between bg-white rounded-xl shadow-sm border p-4">
+  <div>
+    <p className="text-sm font-medium text-gray-900">Campaign Status</p>
+    <p className="text-xs text-gray-500">Toggle Active/Draft</p>
+  </div>
+
+  <button
+    onClick={handleToggleStatus}
+    disabled={updating}
+    className={`relative inline-flex h-6 w-12 items-center rounded-full transition-colors ${
+      campaign.status === "active" ? "bg-primary" : "bg-gray-300"
+    }`}
+  >
+    <span
+      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+        campaign.status === "active" ? "translate-x-6" : "translate-x-1"
+      }`}
+    />
+  </button>
+</div>
+
 
           {/* Campaign Details Grid */}
           <div className="bg-white rounded-xl shadow-sm border p-4">
